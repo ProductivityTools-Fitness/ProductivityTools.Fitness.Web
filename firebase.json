@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "site":"pts-fitness",
+    "public": "dist/ProductivityTools.Fitness.Web/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
