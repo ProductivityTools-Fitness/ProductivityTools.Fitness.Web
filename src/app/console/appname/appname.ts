@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ConsoleService } from '../console.service';
 
 @Component({
@@ -7,14 +7,15 @@ import { ConsoleService } from '../console.service';
   templateUrl: './appname.html',
   styleUrl: './appname.css',
 })
-export class Appname {
+export class Appname implements OnInit {
   constructor(private consoleService: ConsoleService) {
   }
 
   serverName: string | undefined;
-  
-  onngOnInit() {
+
+  ngOnInit() {
     this.consoleService.getServerName().subscribe((serverName) => {
+      console.log("serverName: " + serverName);
       this.serverName = serverName;
     });
   }
