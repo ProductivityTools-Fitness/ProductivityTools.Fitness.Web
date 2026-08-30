@@ -11,7 +11,7 @@ export class Appname implements OnInit {
   constructor(private consoleService: ConsoleService) {
   }
 
-  serverName: string | undefined;
+  serverName: string | 'still did not receive anything';
 
   ngOnInit() {
     this.consoleService.getServerName().subscribe((serverName) => {
