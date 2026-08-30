@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ConsoleService } from '../console.service';
 
 @Component({
@@ -8,16 +8,17 @@ import { ConsoleService } from '../console.service';
   styleUrl: './appname.css',
 })
 export class Appname implements OnInit {
+
+  serverName=signal<string>('did not receive anything')
+
   constructor(private consoleService: ConsoleService) {
-    this.serverName="did not recevie anything"
   }
 
-  serverName: string | undefined;
 
   ngOnInit() {
     this.consoleService.getServerName().subscribe((serverName) => {
       console.log("serverName: " + serverName);
-      this.serverName = serverName;
+      this.serverName.set(serverName);
     });
   }
 }
