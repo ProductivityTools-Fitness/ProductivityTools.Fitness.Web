@@ -9,9 +9,10 @@ import { ConsoleService } from '../console.service';
 })
 export class Appname implements OnInit {
   constructor(private consoleService: ConsoleService) {
+    this.serverName="did not recevie anything"
   }
 
-  serverName: string | 'still did not receive anything';
+  serverName: string | undefined;
 
   ngOnInit() {
     this.consoleService.getServerName().subscribe((serverName) => {
