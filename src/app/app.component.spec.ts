@@ -28,7 +28,7 @@ describe('AppComponent', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain(
-      'Hello, ProductivityTools.Fitness.Web',
+      'ProductivityTools.Fitness',
     );
   });
 });

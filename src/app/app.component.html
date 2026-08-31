@@ -1,5 +1,11 @@
-<h1>Hello, {{ title() }}</h1>
-<app-hello></app-hello>
-<app-appname/>
-<app-workout-list></app-workout-list>
-<router-outlet></router-outlet>
+<header>
+  <h1>ProductivityTools.Fitness</h1>
+  <nav>
+    <a routerLink="/home">Start</a> |
+    <a routerLink="/workouts">Treningi</a> |
+    <a routerLink="/exercises">Ćwiczenia</a>
+  </nav>
+</header>
+<main>
+  <router-outlet></router-outlet>
+</main>
