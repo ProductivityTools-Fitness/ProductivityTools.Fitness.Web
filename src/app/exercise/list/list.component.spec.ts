@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Appname } from './appname';
+import { ListComponent } from './list.component';
 
-describe('Appname', () => {
-  let component: Appname;
-  let fixture: ComponentFixture<Appname>;
+describe('ListComponent', () => {
+  let component: ListComponent;
+  let fixture: ComponentFixture<ListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Appname],
+      imports: [ListComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Appname);
+    fixture = TestBed.createComponent(ListComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
@@ -20,3 +20,4 @@ describe('Appname', () => {
     expect(component).toBeTruthy();
   });
 });
+
