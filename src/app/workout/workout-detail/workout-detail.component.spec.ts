@@ -1,20 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { MasterComponent } from './master.component';
+import { WorkoutDetailComponent } from './workout-detail.component';
 
-describe('MasterComponent', () => {
-  let component: MasterComponent;
-  let fixture: ComponentFixture<MasterComponent>;
+describe('WorkoutDetailComponent', () => {
+  let component: WorkoutDetailComponent;
+  let fixture: ComponentFixture<WorkoutDetailComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MasterComponent],
+      imports: [WorkoutDetailComponent],
       providers: [provideRouter([])],
     }).compileComponents();
 
-
-    fixture = TestBed.createComponent(MasterComponent);
+    fixture = TestBed.createComponent(WorkoutDetailComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
@@ -23,4 +22,5 @@ describe('MasterComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
 

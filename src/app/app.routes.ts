@@ -9,7 +9,9 @@ export const routes: Routes = [
   {
     path: 'workout',
     loadComponent: () =>
-      import('./workout/master/master.component').then((m) => m.MasterComponent),
+      import('./workout/workout-detail/workout-detail.component').then(
+        (m) => m.WorkoutDetailComponent,
+      ),
   },
     {
     path: 'exercise-list',
