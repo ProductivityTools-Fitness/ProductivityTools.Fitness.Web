@@ -25,19 +25,26 @@ export class ExerciseListComponent implements OnInit {
   }
 
   toggleExercise(id:number){
-    if(this.selectedExerciseIds().has(id))
-    {
-      this.selectedExerciseIds().delete(id);
-    }
-    else
-    {
-      this.selectedExerciseIds().add(id);
-    }
+    this.selectedExerciseIds.update((current)=>{
+      const next=new Set(current);
+      if(next.has(id))
+      {
+        next.delete(id);
+      }
+      else
+      {
+        next.add(id);
+      }
+      return next;
+  })
   }
 
   saveExercises(){
     let exerciseListArray= Array.from(this.selectedExerciseIds())
-    this.workoutService.updateExerciseList(1,exerciseListArray)
+    this.workoutService.updateExerciseList(1,exerciseListArray).subscribe({
+      next:()=>console.log("zapisano"),
+      error:(err)=>console.log("blad",err)
+    })
   }
 }
 
