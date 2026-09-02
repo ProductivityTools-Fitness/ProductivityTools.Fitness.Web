@@ -10,7 +10,9 @@ import { environment } from '../../environments/environment';
 export class WorkoutService {
  private readonly http = inject(HttpClient);
 
-  updateExerciseList(workoutId:number, exerciseList[]:number[]): Observable<Boolean> {
+  updateExerciseList(workoutId:number, exerciseList:number[]): Observable<Boolean> {
+    console.log("workoutid",workoutId);
+    console.log("exercise list",exerciseList);
     return this.http.post<Boolean>(`${environment.apiUrl}/workout/exerciseList`,{
       workoutId:workoutId,
       exerciseList:exerciseList

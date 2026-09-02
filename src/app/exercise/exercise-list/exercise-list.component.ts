@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ExerciseService } from '../exercise.service';
 import { Exercise } from '../models/exercise';
+import { WorkoutService } from '../../workout/workout.service';
 
 @Component({
   selector: 'app-exercise-list',
@@ -12,7 +13,9 @@ export class ExerciseListComponent implements OnInit {
   exerciseList = signal<Exercise[]>([]);
   selectedExerciseIds=signal<Set<number>>(new Set());
 
-  constructor(private exerciseService: ExerciseService) {}
+  constructor(private exerciseService: ExerciseService,
+    private workoutService: WorkoutService
+  ) {}
 
   ngOnInit() {
     this.exerciseService.getExerciseList().subscribe((exercises) => {
@@ -33,7 +36,8 @@ export class ExerciseListComponent implements OnInit {
   }
 
   saveExercises(){
-    
+    let exerciseListArray= Array.from(this.selectedExerciseIds())
+    this.workoutService.updateExerciseList(1,exerciseListArray)
   }
 }
 
