@@ -1,27 +1,29 @@
-import { Component ,} from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { WorkoutService } from '../workout.service';
-import { Observable } from 'rxjs';
-
 
 @Component({
   selector: 'app-workout-list',
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './workout-list.component.html',
   styleUrl: './workout-list.component.css',
 })
 export class WorkoutListComponent {
   constructor(
-    private workoutService: WorkoutService) {}
+    private workoutService: WorkoutService,
+    private router: Router,
+  ) {}
 
   newWorkout() {
     this.workoutService.newWorkout().subscribe({
-      next: (entity) => {
-        
-        let workoutId=entity;
-        console.log('zapisano',workoutId)
+      next: (workoutId) => {
+        console.log('Workout created with ID:', workoutId);
+        this.router.navigate(['/workouts/detail'], {
+          queryParams: { workoutId },
+        });
       },
-      error: (err) => console.log('blad', err),
+      error: (err) => console.error('Error creating workout:', err),
     });
   }
 }
+

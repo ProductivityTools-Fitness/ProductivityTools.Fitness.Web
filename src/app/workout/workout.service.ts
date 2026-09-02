@@ -9,12 +9,12 @@ import { environment } from '../../environments/environment';
 export class WorkoutService {
   private readonly http = inject(HttpClient);
 
-  newWorkout() {
-    let workoutId:Observable<number> =this.http.post<number>(`${environment.apiUrl}/workout/newWorkout`,{
-      title:"xxx"
+  newWorkout(title: string = 'New workout'): Observable<number> {
+    return this.http.post<number>(`${environment.apiUrl}/workout/newWorkout`, {
+      title,
     });
-    return workoutId;
   }
+
 
   updateExerciseList(workoutId: number, exerciseList: number[]): Observable<boolean> {
     console.log('workoutid', workoutId);

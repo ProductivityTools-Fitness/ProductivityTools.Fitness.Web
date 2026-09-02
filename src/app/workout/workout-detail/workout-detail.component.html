@@ -1,5 +1,7 @@
+<h2>Workout @if (workoutId) { #{{ workoutId }} }</h2>
 <p>workout-detail works!</p>
-<a [routerLink]="['/exercises']" [queryParams]="{ workoutId: 1 }"> Add Exercise</a>
+<a [routerLink]="['/exercises']" [queryParams]="{ workoutId: workoutId }"> Add Exercise</a>
+
 
 
 
