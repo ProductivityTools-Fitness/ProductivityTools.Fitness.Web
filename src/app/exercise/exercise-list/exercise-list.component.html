@@ -1,3 +1,25 @@
 <h2>Exercise list</h2>
 <p>exercise-list works!</p>
+@if (exercise$ | async; as exerciseList) {
+  @if (exerciseList.length > 0) {
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let exercise of exerciseList">     
+          <td>
+            x
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  } @else {
+    <p class="empty-message">No routes available.</p>
+  }
+} @else {
+  <p class="loading-message">Route list loading... Please wait.</p>
+}
 
