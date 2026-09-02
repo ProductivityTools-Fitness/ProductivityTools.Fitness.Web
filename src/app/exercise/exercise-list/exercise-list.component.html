@@ -11,7 +11,12 @@
     </thead>
     <tbody>
       @for (exercise of exerciseList(); track exercise.id) {
-        <tr>     
+        <tr>
+          <td><input type="checkbox"
+            [checked]="selectedExerciseIds().has(exercise.id)"
+            (change)="toggleExercise(exercise.id)"
+            ></td>
+          <td></td>
           <td>{{ exercise.id }}</td>
           <td>{{ exercise.name }}</td>
         </tr>
@@ -22,4 +27,4 @@
   <p class="empty-message">No exercises available.</p>
 }
 
-
+<button onclick="saveExercises()">save</button>

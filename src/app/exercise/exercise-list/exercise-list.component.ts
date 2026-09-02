@@ -10,6 +10,7 @@ import { Exercise } from '../models/exercise';
 })
 export class ExerciseListComponent implements OnInit {
   exerciseList = signal<Exercise[]>([]);
+  selectedExerciseIds=signal<Set<number>>(new Set());
 
   constructor(private exerciseService: ExerciseService) {}
 
@@ -18,6 +19,21 @@ export class ExerciseListComponent implements OnInit {
       console.log('exercise list: ' + exercises.length);
       this.exerciseList.set(exercises);
     });
+  }
+
+  toggleExercise(id:number){
+    if(this.selectedExerciseIds().has(id))
+    {
+      this.selectedExerciseIds().delete(id);
+    }
+    else
+    {
+      this.selectedExerciseIds().add(id);
+    }
+  }
+
+  saveExercises(){
+    
   }
 }
 

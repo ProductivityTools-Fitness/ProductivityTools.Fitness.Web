@@ -9,3 +9,4 @@ ng build / npm run build (produkcja): Aplikacja kompiluje się z adresem produkc
 
 
 
+ng generate component exercise/exercise-detail/exercise-detail.component --flat
