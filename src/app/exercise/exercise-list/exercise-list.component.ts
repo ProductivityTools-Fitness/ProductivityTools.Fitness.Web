@@ -14,9 +14,9 @@ export class ExerciseListComponent:ngOnInit{
   constructor(private exerciseService: ExerciseService) {}
 
   ngOnInit() {
-    this.getExerciseList.getExerciseList().subscribe((exerciseList) => {
-      console.log('exercise list: ' + getExerciseList.length);
-      this.exerciseList.set(exerciseList);
+    this.exerciseService.getExerciseList().subscribe((exercises)=> {
+      console.log('exercise list: ' + exercises.length);
+      this.exerciseList.set(exercises);
     });
   }
 }
