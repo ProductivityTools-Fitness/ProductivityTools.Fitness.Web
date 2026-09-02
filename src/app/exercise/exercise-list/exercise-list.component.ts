@@ -1,5 +1,6 @@
-import { Component, ngOnInit } from '@angular/core';
-import {ExerciseService} from '../exercise.service'
+import { Component, OnInit, signal } from '@angular/core';
+import { ExerciseService } from '../exercise.service';
+import { Exercise } from '../models/exercise';
 
 @Component({
   selector: 'app-exercise-list',
@@ -7,18 +8,18 @@ import {ExerciseService} from '../exercise.service'
   templateUrl: './exercise-list.component.html',
   styleUrl: './exercise-list.component.css',
 })
-export class ExerciseListComponent:ngOnInit{
-
+export class ExerciseListComponent implements OnInit {
   exerciseList = signal<Exercise[]>([]);
 
   constructor(private exerciseService: ExerciseService) {}
 
   ngOnInit() {
-    this.exerciseService.getExerciseList().subscribe((exercises)=> {
+    this.exerciseService.getExerciseList().subscribe((exercises) => {
       console.log('exercise list: ' + exercises.length);
       this.exerciseList.set(exercises);
     });
   }
 }
+
 
 

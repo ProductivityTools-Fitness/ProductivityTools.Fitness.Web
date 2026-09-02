@@ -1,25 +1,25 @@
 <h2>Exercise list</h2>
 <p>exercise-list works!</p>
-@if (exercise$ | async; as exerciseList) {
-  @if (exerciseList.length > 0) {
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
+
+@if (exerciseList().length > 0) {
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (exercise of exerciseList(); track exercise.id) {
+        <tr>     
+          <td>{{ exercise.id }}</td>
+          <td>{{ exercise.name }}</td>
         </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let exercise of exerciseList">     
-          <td>
-            x
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  } @else {
-    <p class="empty-message">No routes available.</p>
-  }
+      }
+    </tbody>
+  </table>
 } @else {
-  <p class="loading-message">Route list loading... Please wait.</p>
+  <p class="empty-message">No exercises available.</p>
 }
+
 
