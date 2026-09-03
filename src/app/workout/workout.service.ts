@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Workout } from './models/workout';
 
 @Injectable({
   providedIn: 'root',
@@ -9,19 +10,19 @@ import { environment } from '../../environments/environment';
 export class WorkoutService {
   private readonly http = inject(HttpClient);
 
-  newWorkout(title: string = 'New workout'): Observable<number> {
-    return this.http.post<number>(`${environment.apiUrl}/workout/newWorkout`, {
+  newWorkout(title: string = 'New workout'): Observable<Workout> {
+    return this.http.post<Workout>(`${environment.apiUrl}/workout/add`, {
       title,
     });
   }
 
-
-  updateExerciseList(workoutId: number, exerciseList: number[]): Observable<boolean> {
+  updateExerciseList(workoutId: number, exerciseIds: number[]): Observable<boolean> {
     console.log('workoutid', workoutId);
-    console.log('exercise list', exerciseList);
-    return this.http.post<boolean>(`${environment.apiUrl}/workout/exerciseList`, {
+    console.log('exercise list', exerciseIds);
+    return this.http.post<boolean>(`${environment.apiUrl}/workout/${workoutId}/exercise`, {
       workoutId: workoutId,
-      exerciseList: exerciseList,
+      exerciseIds: exerciseIds,
     });
   }
 }
+

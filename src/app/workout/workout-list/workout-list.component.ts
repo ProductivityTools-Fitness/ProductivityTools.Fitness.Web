@@ -16,14 +16,15 @@ export class WorkoutListComponent {
 
   newWorkout() {
     this.workoutService.newWorkout().subscribe({
-      next: (workoutId) => {
-        console.log('Workout created with ID:', workoutId);
+      next: (workout) => {
+        console.log('Workout created with ID:', workout.id);
         this.router.navigate(['/workouts/detail'], {
-          queryParams: { workoutId },
+          queryParams: { workoutId: workout.id },
         });
       },
       error: (err) => console.error('Error creating workout:', err),
     });
   }
+
 }
 
