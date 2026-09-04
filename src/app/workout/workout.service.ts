@@ -14,6 +14,11 @@ export class WorkoutService {
     return this.http.get<Workout[]>(`${environment.apiUrl}/workout/list`);
   }
 
+  getWorkout(workoutId: number): Observable<Workout> {
+    return this.http.get<Workout>(`${environment.apiUrl}/workout/${workoutId}`);
+  }
+
+
 
   newWorkout(title: string = 'New workout'): Observable<Workout> {
     return this.http.post<Workout>(`${environment.apiUrl}/workout/add`, {

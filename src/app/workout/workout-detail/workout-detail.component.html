@@ -1,6 +1,131 @@
-<h2>Workout @if (workoutId) { #{{ workoutId }} }</h2>
-<p>workout-detail works!</p>
-<a [routerLink]="['/exercises']" [queryParams]="{ workoutId: workoutId }"> Add Exercise</a>
+<div class="workout-detail-container">
+  <div class="header-nav">
+    <a [routerLink]="['/workouts']" class="back-link">← Back to workouts</a>
+  </div>
+
+  @if (isLoading()) {
+    <p class="loading-message">Loading workout details... Please wait.</p>
+  } @else if (errorMessage()) {
+    <div class="error-box">
+      <p>{{ errorMessage() }}</p>
+      @if (workoutId()) {
+        <button (click)="loadWorkout(workoutId()!)">Retry</button>
+      }
+    </div>
+  } @else if (workout()) {
+    <div class="workout-card">
+      <div class="workout-header">
+        <div class="title-group">
+          <h2>{{ workout()!.title }}</h2>
+          <span class="status-badge" [class]="workout()!.status?.toLowerCase()">
+            {{ workout()!.status }}
+          </span>
+        </div>
+        <div class="workout-meta">
+          <p><strong>Workout ID:</strong> #{{ workout()!.id }}</p>
+          <p><strong>Date:</strong> {{ workout()!.startTime | date:'medium' }}</p>
+          @if (workout()!.durationSeconds) {
+            <p><strong>Duration:</strong> {{ workout()!.durationSeconds }}s</p>
+          }
+        </div>
+      </div>
+
+      @if (workout()!.notes) {
+        <p class="workout-notes"><em>{{ workout()!.notes }}</em></p>
+      }
+
+      <div class="exercises-section">
+        <div class="section-header">
+          <h3>Exercises ({{ workout()!.exercises?.length || 0 }})</h3>
+          <a
+            class="btn btn-add"
+            [routerLink]="['/exercises']"
+            [queryParams]="{ workoutId: workout()!.id }"
+          >
+            + Add Exercise
+          </a>
+        </div>
+
+        @if (workout()!.exercises && workout()!.exercises!.length > 0) {
+          <div class="exercise-list">
+            @for (item of workout()!.exercises; track item.id || item.orderIndex) {
+              <div class="exercise-card">
+                <div class="exercise-card-header">
+                  <div>
+                    <h4>{{ item.orderIndex }}. {{ item.exercise.name }}</h4>
+                    <span class="category-badge">
+                      {{ item.exercise.category || 'Exercise' }}
+                      @if (item.exercise.primaryMuscle) {
+                        • {{ item.exercise.primaryMuscle }}
+                      }
+                    </span>
+                  </div>
+                  @if (item.restTimerSeconds) {
+                    <span class="rest-timer">Rest: {{ item.restTimerSeconds }}s</span>
+                  }
+                </div>
+
+                @if (item.notes) {
+                  <p class="exercise-notes">{{ item.notes }}</p>
+                }
+
+                @if (item.sets && item.sets.length > 0) {
+                  <table class="sets-table">
+                    <thead>
+                      <tr>
+                        <th>Set</th>
+                        <th>Type</th>
+                        <th>Weight (kg)</th>
+                        <th>Reps</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (set of item.sets; track set.id || set.setNumber) {
+                        <tr [class.completed]="set.isCompleted">
+                          <td>{{ set.setNumber }}</td>
+                          <td>{{ set.setType || 'NORMAL' }}</td>
+                          <td>{{ set.weightKg }}</td>
+                          <td>{{ set.reps }}</td>
+                          <td>
+                            @if (set.isCompleted) {
+                              <span class="status-done">✓ Completed</span>
+                            } @else {
+                              <span class="status-pending">—</span>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                } @else {
+                  <p class="empty-sets">No sets recorded for this exercise.</p>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-exercises">
+            <p>No exercises added to this workout yet.</p>
+            <a
+              class="btn btn-add"
+              [routerLink]="['/exercises']"
+              [queryParams]="{ workoutId: workout()!.id }"
+            >
+              Add your first exercise
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="no-workout">
+      <p>No workout selected.</p>
+      <a [routerLink]="['/workouts']">Go to workout list</a>
+    </div>
+  }
+</div>
+
 
 
 
