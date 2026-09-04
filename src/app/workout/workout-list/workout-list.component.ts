@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit,signal} from '@angular/core';
 import { Router } from '@angular/router';
 import { WorkoutService } from '../workout.service';
+import { Workout } from '../models/workout';
 
 @Component({
   selector: 'app-workout-list',
@@ -8,11 +9,21 @@ import { WorkoutService } from '../workout.service';
   templateUrl: './workout-list.component.html',
   styleUrl: './workout-list.component.css',
 })
-export class WorkoutListComponent {
+export class WorkoutListComponent implements OnInit {
+
+  workoutList=signal<Workout[]>([]);
+
   constructor(
     private workoutService: WorkoutService,
     private router: Router,
   ) {}
+
+
+  ngOnInit(): void {
+    this.workoutService.workoutList().subscribe((workouts)=>{
+      this.workoutList.set(workouts);
+    });
+  }
 
   newWorkout() {
     this.workoutService.newWorkout().subscribe({

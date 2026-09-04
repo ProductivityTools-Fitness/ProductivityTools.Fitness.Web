@@ -1,5 +1,16 @@
 <h2>Workout list</h2>
 <p>Here workout list will show</p>
+
+@if(workoutList().length>0){
+    <table>
+        @for (workout of workoutList();track workout.id){
+        <tr>
+            <td>{{workout.id}}</td>
+        </tr>
+    }
+    </table>
+}
+
 <button (click)="newWorkout()">Add training</button>
 
 
