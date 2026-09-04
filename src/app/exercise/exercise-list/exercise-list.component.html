@@ -1,35 +1,149 @@
-<h2>Exercise list</h2>
-<p>exercise-list works!</p>
+<div class="exercise-list-container">
+  @if (workoutId()) {
+    <div class="workout-mode-banner">
+      <div class="banner-text">
+        <span>🏋️ Wybierasz ćwiczenia dla treningu <strong>#{{ workoutId() }}</strong></span>
+      </div>
+      <a [routerLink]="['/workouts/detail']" [queryParams]="{ workoutId: workoutId() }" class="btn btn-back">
+        ← Wróć do treningu
+      </a>
+    </div>
+  }
 
-@if (exerciseList().length > 0) {
-  <table>
-    <thead>
-      <tr>
-        <th></th>
-        <th>ID</th>
-        <th>Name</th>
-      </tr>
-    </thead>
-    <tbody>
+  <div class="header-row">
+    <div>
+      <h2>Ćwiczenia</h2>
+      <p class="subtitle">
+        @if (workoutId()) {
+          Wybierz ćwiczenia do swojego treningu lub kliknij w kartę, aby podejrzeć technikę wykonania.
+        } @else {
+          Baza ćwiczeń treningowych z podglądem animacji i szczegółową instrukcją wykonania.
+        }
+      </p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="state-box">
+      <p>Ładowanie listy ćwiczeń... Proszę czekać.</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="error-box">
+      <p>{{ errorMessage() }}</p>
+      <button class="btn btn-retry" (click)="loadExercises()">Spróbuj ponownie</button>
+    </div>
+  } @else if (exerciseList().length > 0) {
+    <div class="exercises-grid">
       @for (exercise of exerciseList(); track exercise.id) {
-        <tr>
-          <td>
-            <input
-              type="checkbox"
-              [checked]="selectedExerciseIds().has(exercise.id)"
-              (change)="toggleExercise(exercise.id)"
-            />
-          </td>
-          <td>{{ exercise.id }}</td>
-          <td>{{ exercise.name }}</td>
-        </tr>
-      }
-    </tbody>
-  </table>
-} @else {
-  <p class="empty-message">No exercises available.</p>
-}
+        <div
+          class="exercise-card"
+          [class.card-selected]="workoutId() && selectedExerciseIds().has(exercise.id)"
+        >
+          <div class="card-media">
+            <a
+              [routerLink]="['/exercises/detail']"
+              [queryParams]="workoutId() ? { exerciseId: exercise.id, workoutId: workoutId() } : { exerciseId: exercise.id }"
+              class="media-link"
+              [title]="'Zobacz szczegóły: ' + exercise.name"
+            >
+              @if (exercise.gifUrl || exercise.iconUrl) {
+                <img
+                  [src]="exercise.gifUrl || exercise.iconUrl"
+                  [alt]="exercise.name"
+                  loading="lazy"
+                  class="exercise-img"
+                />
+              } @else {
+                <div class="placeholder-media">
+                  <span class="placeholder-icon">🏋️</span>
+                  <span class="placeholder-text">Brak podglądu</span>
+                </div>
+              }
+            </a>
 
-<button (click)="saveExercises()" [disabled]="selectedExerciseIds().size === 0">
-  Save ({{ selectedExerciseIds().size }})
-</button>
+            <span
+              class="badge-type"
+              [class.badge-system]="exercise.isSystem"
+              [class.badge-custom]="!exercise.isSystem"
+            >
+              {{ exercise.isSystem ? 'System' : 'Custom' }}
+            </span>
+          </div>
+
+          <div class="card-content">
+            <h3 class="exercise-name">
+              <a
+                [routerLink]="['/exercises/detail']"
+                [queryParams]="workoutId() ? { exerciseId: exercise.id, workoutId: workoutId() } : { exerciseId: exercise.id }"
+              >
+                {{ exercise.name }}
+              </a>
+            </h3>
+
+            <div class="badges-row">
+              @if (exercise.bodyCategory || exercise.category) {
+                <span class="badge badge-body">
+                  {{ exercise.bodyCategory || exercise.category }}
+                </span>
+              }
+              @if (exercise.targetMuscle || exercise.primaryMuscle) {
+                <span class="badge badge-target">
+                  {{ exercise.targetMuscle || exercise.primaryMuscle }}
+                </span>
+              }
+              @if (exercise.equipmentCategory) {
+                <span class="badge badge-equipment">
+                  {{ exercise.equipmentCategory }}
+                </span>
+              }
+            </div>
+
+            <div class="card-actions">
+              @if (workoutId()) {
+                <button
+                  type="button"
+                  class="btn btn-toggle-select"
+                  [class.btn-selected]="selectedExerciseIds().has(exercise.id)"
+                  (click)="toggleExercise(exercise.id)"
+                >
+                  @if (selectedExerciseIds().has(exercise.id)) {
+                    ✓ Wybrano
+                  } @else {
+                    + Wybierz
+                  }
+                </button>
+              }
+
+              <a
+                [routerLink]="['/exercises/detail']"
+                [queryParams]="workoutId() ? { exerciseId: exercise.id, workoutId: workoutId() } : { exerciseId: exercise.id }"
+                class="btn btn-detail"
+              >
+                Szczegóły →
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (workoutId()) {
+      <div class="save-bar">
+        <span class="selection-info">
+          Wybrano do treningu: <strong>{{ selectedExerciseIds().size }}</strong> ćwiczeń
+        </span>
+        <button
+          class="btn btn-save"
+          (click)="saveExercises()"
+          [disabled]="isSaving()"
+        >
+          {{ isSaving() ? 'Zapisywanie...' : 'Zapisz do treningu (' + selectedExerciseIds().size + ')' }}
+        </button>
+      </div>
+    }
+  } @else {
+    <div class="state-box">
+      <p>Brak ćwiczeń w bazie danych.</p>
+    </div>
+  }
+</div>

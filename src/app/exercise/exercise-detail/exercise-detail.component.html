@@ -1,1 +1,99 @@
-<p>exercise-detail.component works!</p>
+<div class="exercise-detail-container">
+  <div class="header-nav">
+    <a
+      [routerLink]="['/exercises']"
+      [queryParams]="workoutId() ? { workoutId: workoutId() } : null"
+      class="back-link"
+    >
+      ← Wróć do listy ćwiczeń
+    </a>
+    @if (workoutId()) {
+      <span class="nav-divider">•</span>
+      <a
+        [routerLink]="['/workouts/detail']"
+        [queryParams]="{ workoutId: workoutId() }"
+        class="back-link"
+      >
+        ← Wróć do treningu #{{ workoutId() }}
+      </a>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <p class="loading-message">Loading exercise details... Please wait.</p>
+  } @else if (errorMessage()) {
+    <div class="error-box">
+      <p>{{ errorMessage() }}</p>
+      @if (exerciseId()) {
+        <button class="btn btn-retry" (click)="loadExercise(exerciseId()!)">Retry</button>
+      }
+    </div>
+  } @else if (exercise()) {
+    <div class="exercise-card">
+      <div class="exercise-header">
+        <div class="title-group">
+          <h2>{{ exercise()!.name }}</h2>
+          <span
+            class="badge"
+            [class.badge-system]="exercise()!.isSystem"
+            [class.badge-custom]="!exercise()!.isSystem"
+          >
+            {{ exercise()!.isSystem ? 'System' : 'Custom' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="exercise-body">
+        @if (exercise()!.gifUrl || exercise()!.iconUrl) {
+          <div class="exercise-media">
+            <img [src]="exercise()!.gifUrl || exercise()!.iconUrl" [alt]="exercise()!.name" />
+          </div>
+        }
+
+        <div class="exercise-info">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Target Muscle</span>
+              <span class="info-value">{{ exercise()!.targetMuscle || exercise()!.primaryMuscle || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Body Category</span>
+              <span class="info-value">{{ exercise()!.bodyCategory || exercise()!.category || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Equipment</span>
+              <span class="info-value">{{ exercise()!.equipmentCategory || 'Bodyweight / None' }}</span>
+            </div>
+          </div>
+
+          @if (getSecondaryMuscles(exercise()).length > 0) {
+            <div class="secondary-muscles-section">
+              <h4>Secondary Muscles:</h4>
+              <div class="muscle-tags">
+                @for (muscle of getSecondaryMuscles(exercise()); track muscle) {
+                  <span class="tag">{{ muscle }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          @if (exercise()!.instructions && exercise()!.instructions!.length > 0) {
+            <div class="instructions-section">
+              <h4>How to perform:</h4>
+              <ol class="instructions-list">
+                @for (step of exercise()!.instructions; track step) {
+                  <li>{{ step }}</li>
+                }
+              </ol>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="no-selection">
+      <p>No exercise selected.</p>
+      <a [routerLink]="['/exercises']">Browse exercise list</a>
+    </div>
+  }
+</div>

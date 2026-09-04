@@ -28,7 +28,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'exercises/detail',
+    loadComponent: () =>
+      import('./exercise/exercise-detail/exercise-detail.component').then(
+        (m) => m.ExerciseDetailComponent,
+      ),
+  },
+  {
     path: 'exercisedb',
+
     loadComponent: () =>
       import('./exercise-db/exercise-db.component').then(
         (m) => m.ExerciseDbComponent,

@@ -13,5 +13,10 @@ export class ExerciseService {
   getExerciseList(): Observable<Exercise[]> {
     return this.http.get<Exercise[]>(`${environment.apiUrl}/exercise/list`);
   }
+
+  getExerciseById(id: number): Observable<Exercise> {
+    return this.http.get<Exercise>(`${environment.apiUrl}/exercise/${id}`);
+  }
 }
+
 

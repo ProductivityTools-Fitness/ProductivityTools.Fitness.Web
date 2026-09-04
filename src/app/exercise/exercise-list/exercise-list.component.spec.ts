@@ -4,6 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 
 import { ExerciseListComponent } from './exercise-list.component';
+import { Exercise } from '../models/exercise';
 
 describe('ExerciseListComponent', () => {
   let component: ExerciseListComponent;
@@ -19,8 +20,6 @@ describe('ExerciseListComponent', () => {
       ],
     }).compileComponents();
 
-
-
     fixture = TestBed.createComponent(ExerciseListComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
@@ -28,6 +27,48 @@ describe('ExerciseListComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should hold and display exercise list', () => {
+    const mockExercises: Exercise[] = [
+      {
+        id: 1,
+        name: 'Bench Press',
+        bodyCategory: 'Chest',
+        targetMuscle: 'Pectorals',
+        equipmentCategory: 'Barbell',
+        gifUrl: 'https://example.com/bench.gif',
+        isSystem: true,
+      },
+      {
+        id: 2,
+        name: 'Squat',
+        bodyCategory: 'Legs',
+        targetMuscle: 'Quadriceps',
+        equipmentCategory: 'Barbell',
+        gifUrl: 'https://example.com/squat.gif',
+        isSystem: true,
+      },
+    ];
+
+    component.exerciseList.set(mockExercises);
+    expect(component.exerciseList().length).toBe(2);
+    expect(component.exerciseList()[0].name).toBe('Bench Press');
+    expect(component.exerciseList()[0].gifUrl).toBe('https://example.com/bench.gif');
+  });
+
+  it('should toggle exercise selection', () => {
+    expect(component.selectedExerciseIds().has(1)).toBe(false);
+
+    component.toggleExercise(1);
+    expect(component.selectedExerciseIds().has(1)).toBe(true);
+
+    component.toggleExercise(2);
+    expect(component.selectedExerciseIds().size).toBe(2);
+
+    component.toggleExercise(1);
+    expect(component.selectedExerciseIds().has(1)).toBe(false);
+    expect(component.selectedExerciseIds().has(2)).toBe(true);
   });
 });
 

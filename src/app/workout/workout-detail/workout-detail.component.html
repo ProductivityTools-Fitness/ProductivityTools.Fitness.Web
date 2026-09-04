@@ -90,7 +90,17 @@
               <div class="exercise-card">
                 <div class="exercise-card-header">
                   <div>
-                    <h4>{{ item.orderIndex }}. {{ item.exercise.name }}</h4>
+                    <h4>
+                      {{ item.orderIndex }}.
+                      <a
+                        [routerLink]="['/exercises/detail']"
+                        [queryParams]="{ exerciseId: item.exercise.id, workoutId: workout()!.id }"
+                        class="exercise-link"
+                        title="Zobacz szczegóły ćwiczenia"
+                      >
+                        {{ item.exercise.name }}
+                      </a>
+                    </h4>
                     <span class="category-badge">
                       {{ item.exercise.category || 'Exercise' }}
                       @if (item.exercise.primaryMuscle) {

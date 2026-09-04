@@ -200,6 +200,15 @@
   margin: 0 0 0.25rem 0;
 }
 
+.exercise-link {
+  color: #1976d2;
+  text-decoration: none;
+}
+
+.exercise-link:hover {
+  text-decoration: underline;
+}
+
 .category-badge {
   font-size: 0.85rem;
   color: #666;
