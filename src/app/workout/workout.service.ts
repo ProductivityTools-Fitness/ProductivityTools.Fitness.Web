@@ -10,9 +10,10 @@ import { Workout } from './models/workout';
 export class WorkoutService {
   private readonly http = inject(HttpClient);
 
-  workoutList(){
+  getWorkoutList(): Observable<Workout[]> {
     return this.http.get<Workout[]>(`${environment.apiUrl}/workout/list`);
   }
+
 
   newWorkout(title: string = 'New workout'): Observable<Workout> {
     return this.http.post<Workout>(`${environment.apiUrl}/workout/add`, {

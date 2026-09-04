@@ -1,27 +1,29 @@
-import { Component, OnInit,signal} from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { DatePipe } from '@angular/common';
 import { WorkoutService } from '../workout.service';
 import { Workout } from '../models/workout';
 
 @Component({
   selector: 'app-workout-list',
-  imports: [],
+  imports: [RouterLink, DatePipe],
   templateUrl: './workout-list.component.html',
   styleUrl: './workout-list.component.css',
 })
 export class WorkoutListComponent implements OnInit {
-
-  workoutList=signal<Workout[]>([]);
+  workoutList = signal<Workout[]>([]);
 
   constructor(
     private workoutService: WorkoutService,
     private router: Router,
   ) {}
 
-
   ngOnInit(): void {
-    this.workoutService.workoutList().subscribe((workouts)=>{
-      this.workoutList.set(workouts);
+    this.workoutService.getWorkoutList().subscribe({
+      next: (workouts) => {
+        this.workoutList.set(workouts);
+      },
+      error: (err) => console.error('Error fetching workout list:', err),
     });
   }
 
@@ -36,6 +38,6 @@ export class WorkoutListComponent implements OnInit {
       error: (err) => console.error('Error creating workout:', err),
     });
   }
-
 }
+
 

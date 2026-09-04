@@ -1,16 +1,37 @@
 <h2>Workout list</h2>
-<p>Here workout list will show</p>
 
-@if(workoutList().length>0){
-    <table>
-        @for (workout of workoutList();track workout.id){
+<button (click)="newWorkout()">+ Add training</button>
+
+@if (workoutList().length > 0) {
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (workout of workoutList(); track workout.id) {
         <tr>
-            <td>{{workout.id}}</td>
+          <td>{{ workout.id }}</td>
+          <td>{{ workout.title }}</td>
+          <td>{{ workout.startTime | date:'short' }}</td>
+          <td>{{ workout.status }}</td>
+          <td>
+            <a [routerLink]="['/workouts/detail']" [queryParams]="{ workoutId: workout.id }">
+              Open
+            </a>
+          </td>
         </tr>
-    }
-    </table>
+      }
+    </tbody>
+  </table>
+} @else {
+  <p class="empty-message">No workouts found. Click "Add training" to start.</p>
 }
 
-<button (click)="newWorkout()">Add training</button>
 
 
