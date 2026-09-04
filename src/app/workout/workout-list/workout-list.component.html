@@ -17,8 +17,9 @@
       @for (workout of workoutList(); track workout.id) {
         <tr>
           <td>{{ workout.id }}</td>
-          <td>{{ workout.title }}</td>
+          <td>{{ getWorkoutTitle(workout) }}</td>
           <td>{{ workout.startTime | date:'short' }}</td>
+
           <td>{{ workout.status }}</td>
           <td>
             <a [routerLink]="['/workouts/detail']" [queryParams]="{ workoutId: workout.id }">

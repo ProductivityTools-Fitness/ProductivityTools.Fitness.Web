@@ -36,11 +36,83 @@
   margin-bottom: 1rem;
 }
 
-.title-group h2 {
-  margin: 0 0 0.5rem 0;
+.title-group {
+  display: flex;
+  align-items: center;
+}
+
+.title-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.title-display h2 {
+  margin: 0;
   display: inline-block;
   vertical-align: middle;
 }
+
+.btn-edit-title {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.btn-edit-title:hover {
+  opacity: 1;
+  background-color: #f0f0f0;
+}
+
+.inline-title-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.title-input {
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.35rem 0.6rem;
+  border: 2px solid #1976d2;
+  border-radius: 4px;
+  outline: none;
+  min-width: 250px;
+}
+
+.btn-save {
+  background-color: #2e7d32;
+  color: white;
+  padding: 0.4rem 0.8rem;
+}
+
+.btn-save:hover:not(:disabled) {
+  background-color: #1b5e20;
+}
+
+.btn-cancel {
+  background-color: #e0e0e0;
+  color: #333;
+  padding: 0.4rem 0.8rem;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #d5d5d5;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 
 .status-badge {
   display: inline-block;

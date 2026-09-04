@@ -16,11 +16,49 @@
     <div class="workout-card">
       <div class="workout-header">
         <div class="title-group">
-          <h2>{{ workout()!.title }}</h2>
-          <span class="status-badge" [class]="workout()!.status?.toLowerCase()">
-            {{ workout()!.status }}
-          </span>
+          @if (isEditingTitle()) {
+            <div class="inline-title-edit">
+              <input
+                type="text"
+                [(ngModel)]="titleInput"
+                (keydown.enter)="saveTitle()"
+                (keydown.escape)="cancelEditTitle()"
+                [disabled]="isSavingTitle()"
+                class="title-input"
+                placeholder="Enter workout title..."
+              />
+              <button
+                class="btn btn-save"
+                (click)="saveTitle()"
+                [disabled]="isSavingTitle() || !titleInput.trim()"
+              >
+                {{ isSavingTitle() ? 'Saving...' : 'Save' }}
+              </button>
+              <button
+                class="btn btn-cancel"
+                (click)="cancelEditTitle()"
+                [disabled]="isSavingTitle()"
+              >
+                Cancel
+              </button>
+            </div>
+          } @else {
+            <div class="title-display">
+              <h2>{{ getWorkoutTitle(workout()) }}</h2>
+              <button
+                class="btn-edit-title"
+                (click)="startEditTitle()"
+                title="Edit workout title"
+              >
+                ✏️
+              </button>
+              <span class="status-badge" [class]="workout()!.status?.toLowerCase()">
+                {{ workout()!.status }}
+              </span>
+            </div>
+          }
         </div>
+
         <div class="workout-meta">
           <p><strong>Workout ID:</strong> #{{ workout()!.id }}</p>
           <p><strong>Date:</strong> {{ workout()!.startTime | date:'medium' }}</p>

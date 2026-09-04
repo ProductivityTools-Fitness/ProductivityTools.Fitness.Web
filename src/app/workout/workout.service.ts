@@ -20,11 +20,18 @@ export class WorkoutService {
 
 
 
-  newWorkout(title: string = 'New workout'): Observable<Workout> {
+  newWorkout(title?: string): Observable<Workout> {
     return this.http.post<Workout>(`${environment.apiUrl}/workout/add`, {
+      title: title || undefined,
+    });
+  }
+
+  updateWorkoutTitle(workoutId: number, title: string): Observable<Workout> {
+    return this.http.put<Workout>(`${environment.apiUrl}/workout/${workoutId}/title`, {
       title,
     });
   }
+
 
   updateExerciseList(workoutId: number, exerciseIds: number[]): Observable<boolean> {
     console.log('workoutid', workoutId);
