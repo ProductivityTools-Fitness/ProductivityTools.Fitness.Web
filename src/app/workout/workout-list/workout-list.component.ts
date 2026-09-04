@@ -38,6 +38,19 @@ export class WorkoutListComponent implements OnInit {
       error: (err) => console.error('Error creating workout:', err),
     });
   }
+
+  getWorkoutTitle(workout: Workout): string {
+    if (
+      workout.title &&
+      workout.title.trim() !== '' &&
+      !['Log Workout', 'New workout'].includes(workout.title)
+    ) {
+      return workout.title;
+    }
+    return `Trening #${workout.id}`;
+  }
 }
+
+
 
 

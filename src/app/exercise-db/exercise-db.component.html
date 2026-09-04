@@ -1,0 +1,119 @@
+<div class="exercisedb-container">
+  <h2>ExerciseDB - External Catalogue</h2>
+  <p class="subtitle">Search and import exercises from the global ExerciseDB database into your local catalogue.</p>
+
+  <form class="search-form" (ngSubmit)="onSearch()">
+    <div class="search-input-group">
+      <input
+        type="text"
+        name="searchQuery"
+        [(ngModel)]="searchQuery"
+        placeholder="Search exercises by name (e.g. bench press, squat, curl)..."
+        class="search-input"
+        [disabled]="isLoading()"
+      />
+      <button type="submit" class="btn btn-search" [disabled]="isLoading()">
+        @if (isLoading()) {
+          Searching...
+        } @else {
+          🔍 Search
+        }
+      </button>
+    </div>
+  </form>
+
+  @if (errorMessage()) {
+    <div class="error-box">
+      <p>{{ errorMessage() }}</p>
+      <button class="btn btn-retry" (click)="onSearch()">Try Again</button>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-box">
+      <p>Searching exercises in ExerciseDB... Please wait.</p>
+    </div>
+  } @else if (searchResults().length > 0) {
+    <div class="results-header">
+      <h3>Search Results ({{ searchResults().length }})</h3>
+    </div>
+
+    <div class="results-grid">
+      @for (item of searchResults(); track item.externalExerciseId) {
+        <div class="exercise-card" [class.imported]="item.isAlreadyImported">
+          @if (item.gifUrl) {
+            <div class="card-media">
+              <img [src]="item.gifUrl" [alt]="item.name" loading="lazy" />
+            </div>
+          }
+
+          <div class="card-content">
+            <h4 class="exercise-title">{{ item.name }}</h4>
+
+            <div class="badges-row">
+              @if (item.bodyCategory) {
+                <span class="badge badge-body">{{ item.bodyCategory }}</span>
+              }
+              @if (item.targetMuscle) {
+                <span class="badge badge-muscle">{{ item.targetMuscle }}</span>
+              }
+              @if (item.equipmentCategory) {
+                <span class="badge badge-equipment">{{ item.equipmentCategory }}</span>
+              }
+            </div>
+
+            @if (item.secondaryMuscles && item.secondaryMuscles.length > 0) {
+              <p class="meta-line">
+                <strong>Secondary muscles:</strong> {{ item.secondaryMuscles.join(', ') }}
+              </p>
+            }
+
+            @if (item.instructions && item.instructions.length > 0) {
+              <div class="instructions-section">
+                <button
+                  type="button"
+                  class="btn-toggle-instructions"
+                  (click)="toggleInstructions(item.externalExerciseId)"
+                >
+                  {{ expandedInstructions().has(item.externalExerciseId) ? '▲ Hide instructions' : '▼ Show instructions' }}
+                </button>
+
+                @if (expandedInstructions().has(item.externalExerciseId)) {
+                  <ol class="instructions-list">
+                    @for (step of item.instructions; track step) {
+                      <li>{{ step }}</li>
+                    }
+                  </ol>
+                }
+              </div>
+            }
+
+            <div class="card-actions">
+              @if (item.isAlreadyImported) {
+                <span class="badge-imported">✓ In your catalogue</span>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-import"
+                  (click)="importExercise(item)"
+                  [disabled]="importingIds().has(item.externalExerciseId)"
+                >
+                  {{ importingIds().has(item.externalExerciseId) ? 'Importing...' : '+ Import Exercise' }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (hasSearched()) {
+    <div class="empty-state">
+      <p>No exercises found matching "<strong>{{ searchQuery }}</strong>".</p>
+      <p>Try searching for a different keyword or body part.</p>
+    </div>
+  } @else {
+    <div class="welcome-state">
+      <p>Type an exercise name or muscle group in the search bar above and click <strong>Search</strong> to query ExerciseDB.</p>
+    </div>
+  }
+</div>

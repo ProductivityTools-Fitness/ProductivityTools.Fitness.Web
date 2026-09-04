@@ -27,6 +27,14 @@ export const routes: Routes = [
         (m) => m.ExerciseListComponent,
       ),
   },
+  {
+    path: 'exercisedb',
+    loadComponent: () =>
+      import('./exercise-db/exercise-db.component').then(
+        (m) => m.ExerciseDbComponent,
+      ),
+  },
   { path: '', redirectTo: '/workouts', pathMatch: 'full' },
+
 ];
 
