@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WorkoutService } from '../workout.service';
-import { Workout } from '../models/workout';
+import { Workout, WorkoutSet } from '../models/workout';
 
 @Component({
   selector: 'app-workout-detail',
@@ -117,6 +117,10 @@ export class WorkoutDetailComponent implements OnInit {
         this.isAddingSet.set(null);
       },
     });
+  }
+
+  completeSet(set: WorkoutSet): void {
+    // For now do nothing
   }
 }
 

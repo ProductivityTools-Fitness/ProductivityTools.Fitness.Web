@@ -124,7 +124,7 @@
                         <th>Set</th>
                         <th>Weight (kg)</th>
                         <th>Reps</th>
-                        <th>Status</th>
+                        <th>Complete</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -134,11 +134,18 @@
                           <td>{{ set.weightKg }}</td>
                           <td>{{ set.reps }}</td>
                           <td>
-                            @if (set.isCompleted) {
-                              <span class="status-done">✓ Completed</span>
-                            } @else {
-                              <span class="status-pending">—</span>
-                            }
+                            <button
+                              type="button"
+                              class="btn btn-complete-set"
+                              [class.completed]="set.isCompleted"
+                              (click)="completeSet(set)"
+                            >
+                              @if (set.isCompleted) {
+                                ✓ Complete
+                              } @else {
+                                Complete
+                              }
+                            </button>
                           </td>
                         </tr>
                       }
