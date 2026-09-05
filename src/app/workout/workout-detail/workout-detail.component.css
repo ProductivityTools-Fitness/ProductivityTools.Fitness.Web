@@ -283,3 +283,34 @@
   border-radius: 6px;
   margin-bottom: 1rem;
 }
+
+.exercise-card-footer {
+  margin-top: 0.85rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-add-set {
+  background-color: #f1f5f9;
+  color: #1976d2;
+  border: 1px dashed #90caf9;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-add-set:hover:not(:disabled) {
+  background-color: #e3f2fd;
+  border-color: #1976d2;
+}
+
+.btn-add-set:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

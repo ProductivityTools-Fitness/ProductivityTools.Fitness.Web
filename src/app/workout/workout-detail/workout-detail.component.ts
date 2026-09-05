@@ -23,6 +23,7 @@ export class WorkoutDetailComponent implements OnInit {
   isEditingTitle = signal<boolean>(false);
   titleInput = '';
   isSavingTitle = signal<boolean>(false);
+  isAddingSet = signal<number | null>(null);
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {
@@ -95,6 +96,25 @@ export class WorkoutDetailComponent implements OnInit {
         console.error('Error loading workout details:', err);
         this.errorMessage.set('Failed to load workout details. Please try again.');
         this.isLoading.set(false);
+      },
+    });
+  }
+
+  addSet(exerciseId: number): void {
+    const currentWorkout = this.workout();
+    if (!currentWorkout || !currentWorkout.id || !exerciseId) {
+      return;
+    }
+
+    this.isAddingSet.set(exerciseId);
+    this.workoutService.addSet(currentWorkout.id, exerciseId).subscribe({
+      next: (updatedWorkout) => {
+        this.workout.set(updatedWorkout);
+        this.isAddingSet.set(null);
+      },
+      error: (err) => {
+        console.error('Error adding set:', err);
+        this.isAddingSet.set(null);
       },
     });
   }

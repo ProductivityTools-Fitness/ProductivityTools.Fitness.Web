@@ -122,7 +122,6 @@
                     <thead>
                       <tr>
                         <th>Set</th>
-                        <th>Type</th>
                         <th>Weight (kg)</th>
                         <th>Reps</th>
                         <th>Status</th>
@@ -132,7 +131,6 @@
                       @for (set of item.sets; track set.id || set.setNumber) {
                         <tr [class.completed]="set.isCompleted">
                           <td>{{ set.setNumber }}</td>
-                          <td>{{ set.setType || 'NORMAL' }}</td>
                           <td>{{ set.weightKg }}</td>
                           <td>{{ set.reps }}</td>
                           <td>
@@ -149,6 +147,21 @@
                 } @else {
                   <p class="empty-sets">No sets recorded for this exercise.</p>
                 }
+
+                <div class="exercise-card-footer">
+                  <button
+                    type="button"
+                    class="btn btn-add-set"
+                    (click)="addSet(item.exercise.id)"
+                    [disabled]="isAddingSet() === item.exercise.id"
+                  >
+                    @if (isAddingSet() === item.exercise.id) {
+                      Adding set...
+                    } @else {
+                      + Add set
+                    }
+                  </button>
+                </div>
               </div>
             }
           </div>
