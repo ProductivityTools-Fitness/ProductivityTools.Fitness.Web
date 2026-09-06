@@ -446,3 +446,42 @@
   color: #0f172a;
   border-color: #64748b;
 }
+
+.col-actions {
+  width: 2.75rem;
+}
+
+.col-delete {
+  width: 2.75rem;
+  text-align: center;
+}
+
+.btn-delete-set {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem;
+  font-size: 0.95rem;
+  line-height: 1;
+  border-radius: 4px;
+  opacity: 0.45;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sets-table tr:hover .btn-delete-set {
+  opacity: 0.8;
+}
+
+.btn-delete-set:hover:not(:disabled) {
+  opacity: 1;
+  background-color: #fee2e2;
+  transform: scale(1.15);
+}
+
+.btn-delete-set:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}

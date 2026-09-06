@@ -16,6 +16,10 @@ export interface SaveSetRequest {
   status?: boolean;
 }
 
+export interface DeleteSetRequest {
+  id: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -58,6 +62,11 @@ export class WorkoutService {
 
   saveSet(request: SaveSetRequest): Observable<WorkoutSet> {
     return this.http.post<WorkoutSet>(`${environment.apiUrl}/workout/saveSet`, request);
+  }
+
+  deleteSet(setId: number): Observable<boolean> {
+    const request: DeleteSetRequest = { id: setId };
+    return this.http.post<boolean>(`${environment.apiUrl}/workout/deleteSet`, request);
   }
 }
 

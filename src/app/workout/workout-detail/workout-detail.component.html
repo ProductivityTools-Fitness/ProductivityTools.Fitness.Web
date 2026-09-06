@@ -125,6 +125,7 @@
                         <th>Weight (kg)</th>
                         <th>Reps</th>
                         <th>Complete</th>
+                        <th class="col-actions"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -191,6 +192,18 @@
                               } @else {
                                 Complete
                               }
+                            </button>
+                          </td>
+                          <td class="col-delete">
+                            <button
+                              type="button"
+                              class="btn-delete-set"
+                              [disabled]="isDeletingSet() === set.id"
+                              (click)="deleteSet(set)"
+                              title="Usuń serię"
+                              aria-label="Usuń serię"
+                            >
+                              🗑️
                             </button>
                           </td>
                         </tr>

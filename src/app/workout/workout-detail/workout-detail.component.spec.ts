@@ -219,6 +219,38 @@ describe('WorkoutDetailComponent', () => {
     });
     expect(component.workout()?.exercises?.[0].sets?.[0].isCompleted).toBe(false);
   });
+
+  it('should delete a set and renumber remaining sets', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const set1 = { id: 101, setNumber: 1, weightKg: 80, reps: 10, isCompleted: true };
+    const set2 = { id: 102, setNumber: 2, weightKg: 85, reps: 8, isCompleted: false };
+    const set3 = { id: 103, setNumber: 3, weightKg: 90, reps: 6, isCompleted: false };
+    const initialWorkout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [{ ...set1 }, { ...set2 }, { ...set3 }],
+        },
+      ],
+    };
+    component.workout.set(initialWorkout);
+
+    const deleteSetSpy = vi.spyOn(workoutService, 'deleteSet').mockReturnValue(of(true));
+
+    component.deleteSet(set2);
+
+    expect(deleteSetSpy).toHaveBeenCalledWith(102);
+    const remainingSets = component.workout()?.exercises?.[0].sets;
+    expect(remainingSets?.length).toBe(2);
+    expect(remainingSets?.[0].id).toBe(101);
+    expect(remainingSets?.[0].setNumber).toBe(1);
+    expect(remainingSets?.[1].id).toBe(103);
+    expect(remainingSets?.[1].setNumber).toBe(2);
+    expect(component.isDeletingSet()).toBeNull();
+  });
 });
 
 

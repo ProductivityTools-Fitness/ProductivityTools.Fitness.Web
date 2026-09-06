@@ -26,6 +26,7 @@ export class WorkoutDetailComponent implements OnInit {
   isAddingSet = signal<number | null>(null);
   editingCell = signal<{ setId: number; field: 'weight' | 'reps' } | null>(null);
   savingSetId = signal<number | null>(null);
+  isDeletingSet = signal<number | null>(null);
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((params) => {
@@ -254,6 +255,39 @@ export class WorkoutDetailComponent implements OnInit {
         set.isCompleted = previousStatus;
       }
     );
+  }
+
+  deleteSet(set: WorkoutSet): void {
+    if (!set.id) return;
+    if (this.isDeletingSet() === set.id) return;
+
+    this.isDeletingSet.set(set.id);
+    this.workoutService.deleteSet(set.id).subscribe({
+      next: () => {
+        this.workout.update((currentWorkout) => {
+          if (!currentWorkout || !currentWorkout.exercises) return currentWorkout;
+          return {
+            ...currentWorkout,
+            exercises: currentWorkout.exercises.map((ex) => {
+              const remainingSets = (ex.sets || []).filter((s) => s.id !== set.id);
+              const renumberedSets = remainingSets.map((s, idx) => ({
+                ...s,
+                setNumber: idx + 1,
+              }));
+              return {
+                ...ex,
+                sets: renumberedSets,
+              };
+            }),
+          };
+        });
+        this.isDeletingSet.set(null);
+      },
+      error: (err) => {
+        console.error('Error deleting set:', err);
+        this.isDeletingSet.set(null);
+      },
+    });
   }
 }
 

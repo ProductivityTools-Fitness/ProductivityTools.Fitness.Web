@@ -61,4 +61,15 @@ describe('WorkoutService', () => {
     expect(req.request.body).toEqual({ id: 7, kg: 85, reps: 12, status: true });
     req.flush(mockUpdatedSet);
   });
+
+  it('should post deleteSet with DeleteSetRequest', () => {
+    service.deleteSet(15).subscribe((res) => {
+      expect(res).toBe(true);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/workout/deleteSet`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ id: 15 });
+    req.flush(true);
+  });
 });
