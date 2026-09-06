@@ -130,18 +130,64 @@
                     <tbody>
                       @for (set of item.sets; track set.id || set.setNumber) {
                         <tr [class.completed]="set.isCompleted">
-                          <td>{{ set.setNumber }}</td>
-                          <td>{{ set.weightKg }}</td>
-                          <td>{{ set.reps }}</td>
+                          <td class="col-set-num">{{ set.setNumber }}</td>
+                          <td class="col-editable" (click)="startEdit(set, 'weight')">
+                            @if (isEditing(set.id, 'weight')) {
+                              <input
+                                #weightInput
+                                [id]="'input-weight-' + set.id"
+                                type="number"
+                                step="0.5"
+                                min="0"
+                                class="inline-num-input"
+                                [value]="set.weightKg"
+                                (click)="$event.stopPropagation()"
+                                (change)="saveWeight(set, weightInput.value)"
+                                (blur)="saveWeight(set, weightInput.value)"
+                                (keydown.enter)="saveWeight(set, weightInput.value)"
+                                (keydown.escape)="stopEdit()"
+                              />
+                            } @else {
+                              <div class="cell-display" title="Kliknij, aby edytować ciężar">
+                                <span class="cell-val">{{ set.weightKg }}</span>
+                                <span class="cell-unit">kg</span>
+                                <span class="edit-icon">✏️</span>
+                              </div>
+                            }
+                          </td>
+                          <td class="col-editable" (click)="startEdit(set, 'reps')">
+                            @if (isEditing(set.id, 'reps')) {
+                              <input
+                                #repsInput
+                                [id]="'input-reps-' + set.id"
+                                type="number"
+                                step="1"
+                                min="0"
+                                class="inline-num-input"
+                                [value]="set.reps"
+                                (click)="$event.stopPropagation()"
+                                (change)="saveReps(set, repsInput.value)"
+                                (blur)="saveReps(set, repsInput.value)"
+                                (keydown.enter)="saveReps(set, repsInput.value)"
+                                (keydown.escape)="stopEdit()"
+                              />
+                            } @else {
+                              <div class="cell-display" title="Kliknij, aby edytować powtórzenia">
+                                <span class="cell-val">{{ set.reps }}</span>
+                                <span class="edit-icon">✏️</span>
+                              </div>
+                            }
+                          </td>
                           <td>
                             <button
                               type="button"
                               class="btn btn-complete-set"
                               [class.completed]="set.isCompleted"
+                              [disabled]="savingSetId() === set.id"
                               (click)="completeSet(set)"
                             >
                               @if (set.isCompleted) {
-                                ✓ Complete
+                                Reset
                               } @else {
                                 Complete
                               }

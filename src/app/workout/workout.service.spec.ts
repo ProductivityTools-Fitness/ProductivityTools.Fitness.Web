@@ -42,4 +42,23 @@ describe('WorkoutService', () => {
     expect(req.request.body).toEqual({ workoutId: 5, exerciseId: 10 });
     req.flush(mockWorkout);
   });
+
+  it('should post saveSet with SaveSetRequest', () => {
+    const mockUpdatedSet = {
+      id: 7,
+      setNumber: 1,
+      weightKg: 85,
+      reps: 12,
+      isCompleted: true,
+    };
+
+    service.saveSet({ id: 7, kg: 85, reps: 12, status: true }).subscribe((res) => {
+      expect(res).toEqual(mockUpdatedSet);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/workout/saveSet`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ id: 7, kg: 85, reps: 12, status: true });
+    req.flush(mockUpdatedSet);
+  });
 });

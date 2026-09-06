@@ -1,16 +1,13 @@
 import { Exercise } from '../../exercise/models/exercise';
 
 export type WorkoutStatus = 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-export type SetType = 'NORMAL' | 'WARMUP' | 'DROPSET' | 'FAILURE';
 
 export interface WorkoutSet {
   id?: number;
   workoutExerciseId?: number;
   setNumber: number;
-  setType?: SetType | string;
   weightKg: number;
   reps: number;
-  rpe?: number | null;
   isCompleted: boolean;
   createdAt?: string | Date;
 }

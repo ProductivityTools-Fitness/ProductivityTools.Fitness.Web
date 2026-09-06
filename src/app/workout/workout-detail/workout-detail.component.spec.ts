@@ -71,6 +71,154 @@ describe('WorkoutDetailComponent', () => {
     expect(component.workout()?.exercises?.[0].sets?.length).toBe(2);
     expect(component.isAddingSet()).toBeNull();
   });
+
+  it('should start and stop editing cell', () => {
+    const set = { id: 101, setNumber: 1, weightKg: 50, reps: 8, isCompleted: false };
+    expect(component.isEditing(101, 'weight')).toBe(false);
+
+    component.startEdit(set, 'weight');
+    expect(component.isEditing(101, 'weight')).toBe(true);
+    expect(component.isEditing(101, 'reps')).toBe(false);
+
+    component.stopEdit();
+    expect(component.isEditing(101, 'weight')).toBe(false);
+  });
+
+  it('should save weight and call workoutService.saveSet when weight changes', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const set = { id: 101, setNumber: 1, weightKg: 50, reps: 8, isCompleted: false };
+    const initialWorkout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [{ ...set }],
+        },
+      ],
+    };
+    component.workout.set(initialWorkout);
+
+    const updatedSet = { ...set, weightKg: 65 };
+    const saveSetSpy = vi.spyOn(workoutService, 'saveSet').mockReturnValue(of(updatedSet));
+
+    component.startEdit(set, 'weight');
+    component.saveWeight(set, '65');
+
+    expect(saveSetSpy).toHaveBeenCalledWith({
+      id: 101,
+      kg: 65,
+      reps: 8,
+      status: false,
+    });
+    expect(component.isEditing(101, 'weight')).toBe(false);
+    expect(component.workout()?.exercises?.[0].sets?.[0].weightKg).toBe(65);
+  });
+
+  it('should not call saveSet if weight did not change', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const set = { id: 101, setNumber: 1, weightKg: 50, reps: 8, isCompleted: false };
+    const saveSetSpy = vi.spyOn(workoutService, 'saveSet');
+
+    component.startEdit(set, 'weight');
+    component.saveWeight(set, '50');
+
+    expect(saveSetSpy).not.toHaveBeenCalled();
+    expect(component.isEditing(101, 'weight')).toBe(false);
+  });
+
+  it('should save reps and call workoutService.saveSet when reps change', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const set = { id: 101, setNumber: 1, weightKg: 50, reps: 8, isCompleted: false };
+    const initialWorkout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [{ ...set }],
+        },
+      ],
+    };
+    component.workout.set(initialWorkout);
+
+    const updatedSet = { ...set, reps: 12 };
+    const saveSetSpy = vi.spyOn(workoutService, 'saveSet').mockReturnValue(of(updatedSet));
+
+    component.startEdit(set, 'reps');
+    component.saveReps(set, '12');
+
+    expect(saveSetSpy).toHaveBeenCalledWith({
+      id: 101,
+      kg: 50,
+      reps: 12,
+      status: false,
+    });
+    expect(component.isEditing(101, 'reps')).toBe(false);
+    expect(component.workout()?.exercises?.[0].sets?.[0].reps).toBe(12);
+  });
+
+  it('should complete set by setting status to true and calling saveSet', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const set = { id: 101, setNumber: 1, weightKg: 80, reps: 10, isCompleted: false };
+    const initialWorkout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [{ ...set }],
+        },
+      ],
+    };
+    component.workout.set(initialWorkout);
+
+    const updatedSet = { ...set, isCompleted: true };
+    const saveSetSpy = vi.spyOn(workoutService, 'saveSet').mockReturnValue(of(updatedSet));
+
+    component.completeSet(set);
+
+    expect(saveSetSpy).toHaveBeenCalledWith({
+      id: 101,
+      kg: 80,
+      reps: 10,
+      status: true,
+    });
+    expect(component.workout()?.exercises?.[0].sets?.[0].isCompleted).toBe(true);
+  });
+
+  it('should reset completed set by setting status to false and calling saveSet', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const set = { id: 101, setNumber: 1, weightKg: 80, reps: 10, isCompleted: true };
+    const initialWorkout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [{ ...set }],
+        },
+      ],
+    };
+    component.workout.set(initialWorkout);
+
+    const updatedSet = { ...set, isCompleted: false };
+    const saveSetSpy = vi.spyOn(workoutService, 'saveSet').mockReturnValue(of(updatedSet));
+
+    component.completeSet(set);
+
+    expect(saveSetSpy).toHaveBeenCalledWith({
+      id: 101,
+      kg: 80,
+      reps: 10,
+      status: false,
+    });
+    expect(component.workout()?.exercises?.[0].sets?.[0].isCompleted).toBe(false);
+  });
 });
 
 

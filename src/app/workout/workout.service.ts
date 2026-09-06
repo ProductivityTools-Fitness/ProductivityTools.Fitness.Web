@@ -2,11 +2,18 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Workout } from './models/workout';
+import { Workout, WorkoutSet } from './models/workout';
 
 export interface AddSetRequest {
   workoutId: number;
   exerciseId: number;
+}
+
+export interface SaveSetRequest {
+  id: number;
+  kg?: number;
+  reps?: number;
+  status?: boolean;
 }
 
 @Injectable({
@@ -47,6 +54,10 @@ export class WorkoutService {
   addSet(workoutId: number, exerciseId: number): Observable<Workout> {
     const request: AddSetRequest = { workoutId, exerciseId };
     return this.http.post<Workout>(`${environment.apiUrl}/workout/addSet`, request);
+  }
+
+  saveSet(request: SaveSetRequest): Observable<WorkoutSet> {
+    return this.http.post<WorkoutSet>(`${environment.apiUrl}/workout/saveSet`, request);
   }
 }
 
