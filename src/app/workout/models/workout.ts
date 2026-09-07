@@ -8,6 +8,8 @@ export interface WorkoutSet {
   setNumber: number;
   weightKg: number;
   reps: number;
+  prevWeightKg?: number | null;
+  prevReps?: number | null;
   isCompleted: boolean;
   createdAt?: string | Date;
 }

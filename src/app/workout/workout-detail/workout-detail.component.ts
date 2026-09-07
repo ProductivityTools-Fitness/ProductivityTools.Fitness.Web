@@ -54,6 +54,15 @@ export class WorkoutDetailComponent implements OnInit {
     return `Trening #${workout.id}`;
   }
 
+  formatPrevious(set: WorkoutSet): string {
+    if (set.prevWeightKg == null && set.prevReps == null) {
+      return '—';
+    }
+    const weight = set.prevWeightKg != null ? `${set.prevWeightKg}kg` : '—';
+    const reps = set.prevReps != null ? `${set.prevReps}` : '—';
+    return `${weight} x ${reps}`;
+  }
+
   startEditTitle(): void {
     this.titleInput = this.getWorkoutTitle(this.workout());
     this.isEditingTitle.set(true);

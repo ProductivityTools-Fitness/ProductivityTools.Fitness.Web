@@ -122,6 +122,7 @@
                     <thead>
                       <tr>
                         <th>Set</th>
+                        <th>Previous</th>
                         <th>Weight (kg)</th>
                         <th>Reps</th>
                         <th>Complete</th>
@@ -132,6 +133,9 @@
                       @for (set of item.sets; track set.id || set.setNumber) {
                         <tr [class.completed]="set.isCompleted">
                           <td class="col-set-num">{{ set.setNumber }}</td>
+                          <td class="col-previous">
+                            <span class="prev-val">{{ formatPrevious(set) }}</span>
+                          </td>
                           <td class="col-editable" (click)="startEdit(set, 'weight')">
                             @if (isEditing(set.id, 'weight')) {
                               <input

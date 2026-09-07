@@ -251,6 +251,87 @@ describe('WorkoutDetailComponent', () => {
     expect(remainingSets?.[1].setNumber).toBe(2);
     expect(component.isDeletingSet()).toBeNull();
   });
+
+  it('should render Previous column with format xkg x reps', () => {
+    const set1 = {
+      id: 101,
+      setNumber: 1,
+      weightKg: 80,
+      reps: 10,
+      prevWeightKg: 50,
+      prevReps: 10,
+      isCompleted: false,
+    };
+    const set2 = {
+      id: 102,
+      setNumber: 2,
+      weightKg: 80,
+      reps: 10,
+      prevWeightKg: null,
+      prevReps: null,
+      isCompleted: false,
+    };
+    const initialWorkout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [set1, set2],
+        },
+      ],
+    };
+    component.workout.set(initialWorkout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const prevElements = compiled.querySelectorAll<HTMLElement>('.prev-val');
+    expect(prevElements.length).toBe(2);
+    expect(prevElements[0].textContent?.trim()).toBe('50kg x 10');
+    expect(prevElements[1].textContent?.trim()).toBe('—');
+  });
+
+  it('should correctly format previous set in formatPrevious', () => {
+    expect(
+      component.formatPrevious({
+        setNumber: 1,
+        weightKg: 0,
+        reps: 0,
+        isCompleted: false,
+        prevWeightKg: 50,
+        prevReps: 10,
+      })
+    ).toBe('50kg x 10');
+    expect(
+      component.formatPrevious({
+        setNumber: 1,
+        weightKg: 0,
+        reps: 0,
+        isCompleted: false,
+        prevWeightKg: 72.5,
+        prevReps: 8,
+      })
+    ).toBe('72.5kg x 8');
+    expect(
+      component.formatPrevious({
+        setNumber: 1,
+        weightKg: 0,
+        reps: 0,
+        isCompleted: false,
+        prevWeightKg: null,
+        prevReps: null,
+      })
+    ).toBe('—');
+    expect(
+      component.formatPrevious({
+        setNumber: 1,
+        weightKg: 0,
+        reps: 0,
+        isCompleted: false,
+      })
+    ).toBe('—');
+  });
 });
 
 
