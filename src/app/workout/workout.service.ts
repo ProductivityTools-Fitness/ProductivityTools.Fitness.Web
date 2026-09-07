@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Workout, WorkoutSet } from './models/workout';
+import { Workout, WorkoutExercise, WorkoutSet } from './models/workout';
 
 export interface AddSetRequest {
   workoutId: number;
@@ -18,6 +18,12 @@ export interface SaveSetRequest {
 
 export interface DeleteSetRequest {
   id: number;
+}
+
+export interface SaveExerciseNotesRequest {
+  workoutExerciseId?: number;
+  id?: number;
+  notes: string;
 }
 
 @Injectable({
@@ -67,6 +73,24 @@ export class WorkoutService {
   deleteSet(setId: number): Observable<boolean> {
     const request: DeleteSetRequest = { id: setId };
     return this.http.post<boolean>(`${environment.apiUrl}/workout/deleteSet`, request);
+  }
+
+  saveExerciseNotes(workoutExerciseId: number, notes: string): Observable<WorkoutExercise> {
+    const request: SaveExerciseNotesRequest = {
+      workoutExerciseId,
+      notes,
+    };
+    return this.http.post<WorkoutExercise>(`${environment.apiUrl}/workout/updateExerciseNotes`, request);
+  }
+
+  updateExerciseNotes(workoutExerciseId: number, notes: string): Observable<WorkoutExercise> {
+    return this.saveExerciseNotes(workoutExerciseId, notes);
+  }
+
+  completeWorkout(workoutId: number): Observable<Workout> {
+    return this.http.post<Workout>(`${environment.apiUrl}/workout/completeWorkout`, {
+      workoutId,
+    });
   }
 }
 

@@ -1,38 +1,53 @@
-<h2>Workout list</h2>
+<div class="workout-list-container">
+  <div class="list-header">
+    <h2>Workouts</h2>
+    <button class="btn btn-primary" (click)="newWorkout()">+ Add training</button>
+  </div>
 
-<button (click)="newWorkout()">+ Add training</button>
-
-@if (workoutList().length > 0) {
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Title</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (workout of workoutList(); track workout.id) {
-        <tr>
-          <td>{{ workout.id }}</td>
-          <td>{{ getWorkoutTitle(workout) }}</td>
-          <td>{{ workout.startTime | date:'short' }}</td>
-
-          <td>{{ workout.status }}</td>
-          <td>
-            <a [routerLink]="['/workouts/detail']" [queryParams]="{ workoutId: workout.id }">
-              Open
-            </a>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-} @else {
-  <p class="empty-message">No workouts found. Click "Add training" to start.</p>
-}
+  @if (workoutList().length > 0) {
+    <div class="table-responsive">
+      <table class="workout-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th class="col-actions-head">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (workout of workoutList(); track workout.id) {
+            <tr>
+              <td class="col-id">#{{ workout.id }}</td>
+              <td class="col-title">
+                <a [routerLink]="['/workouts/detail']" [queryParams]="{ workoutId: workout.id }" class="workout-title-link">
+                  {{ getWorkoutTitle(workout) }}
+                </a>
+              </td>
+              <td class="col-date">{{ workout.startTime | date:'mediumDate' }}</td>
+              <td class="col-status">
+                <span class="status-badge" [class]="workout.status?.toLowerCase()">
+                  {{ workout.status }}
+                </span>
+              </td>
+              <td class="col-actions">
+                <a [routerLink]="['/workouts/detail']" [queryParams]="{ workoutId: workout.id }" class="btn-open">
+                  Open →
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <p class="empty-message">No workouts found. Click "Add training" to start.</p>
+      <button class="btn btn-primary" (click)="newWorkout()">+ Add training</button>
+    </div>
+  }
+</div>
 
 
 

@@ -1,9 +1,9 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WorkoutService, SaveSetRequest } from '../workout.service';
-import { Workout, WorkoutSet } from '../models/workout';
+import { Workout, WorkoutExercise, WorkoutSet } from '../models/workout';
 
 @Component({
   selector: 'app-workout-detail',
@@ -11,7 +11,7 @@ import { Workout, WorkoutSet } from '../models/workout';
   templateUrl: './workout-detail.component.html',
   styleUrl: './workout-detail.component.css',
 })
-export class WorkoutDetailComponent implements OnInit {
+export class WorkoutDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly workoutService = inject(WorkoutService);
 
@@ -20,6 +20,9 @@ export class WorkoutDetailComponent implements OnInit {
   isLoading = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
 
+  currentTime = signal<Date>(new Date());
+  private timerInterval: ReturnType<typeof setInterval> | null = null;
+
   isEditingTitle = signal<boolean>(false);
   titleInput = '';
   isSavingTitle = signal<boolean>(false);
@@ -27,8 +30,13 @@ export class WorkoutDetailComponent implements OnInit {
   editingCell = signal<{ setId: number; field: 'weight' | 'reps' } | null>(null);
   savingSetId = signal<number | null>(null);
   isDeletingSet = signal<number | null>(null);
+  editingNotesExerciseId = signal<number | null>(null);
+  exerciseNotesInput = '';
+  savingNotesExerciseId = signal<number | null>(null);
+  isCompletingTraining = signal<boolean>(false);
 
   ngOnInit(): void {
+    this.startDurationTimer();
     this.route.queryParamMap.subscribe((params) => {
       const idParam = params.get('workoutId');
       if (idParam) {
@@ -40,6 +48,24 @@ export class WorkoutDetailComponent implements OnInit {
         this.workout.set(null);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stopDurationTimer();
+  }
+
+  startDurationTimer(): void {
+    if (this.timerInterval != null) return;
+    this.timerInterval = setInterval(() => {
+      this.currentTime.set(new Date());
+    }, 1000);
+  }
+
+  stopDurationTimer(): void {
+    if (this.timerInterval != null) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
   }
 
   getWorkoutTitle(workout: Workout | null): string {
@@ -61,6 +87,110 @@ export class WorkoutDetailComponent implements OnInit {
     const weight = set.prevWeightKg != null ? `${set.prevWeightKg}kg` : '—';
     const reps = set.prevReps != null ? `${set.prevReps}` : '—';
     return `${weight} x ${reps}`;
+  }
+
+  getFormattedDuration(durationSeconds?: number | null): string {
+    if (durationSeconds != null) {
+      return this.formatSeconds(durationSeconds);
+    }
+    const w = this.workout();
+    if (!w) return '0s';
+
+    const isFinished = w.status === 'COMPLETED' || w.status === 'CANCELLED' || w.endTime != null;
+
+    if (isFinished) {
+      if (w.durationSeconds != null && w.durationSeconds > 0) {
+        return this.formatSeconds(w.durationSeconds);
+      }
+      if (w.startTime && w.endTime) {
+        const diff = Math.round(
+          (new Date(w.endTime).getTime() - new Date(w.startTime).getTime()) / 1000
+        );
+        if (diff > 0) {
+          return this.formatSeconds(diff);
+        }
+      }
+      return w.durationSeconds != null ? this.formatSeconds(w.durationSeconds) : '0s';
+    }
+
+    // Active workout in progress: calculate elapsed time from startTime to current time
+    if (w.startTime) {
+      const nowMs = this.currentTime().getTime();
+      const startMs = new Date(w.startTime).getTime();
+      const diffSec = Math.max(0, Math.floor((nowMs - startMs) / 1000));
+      return this.formatSeconds(diffSec);
+    }
+
+    if (w.durationSeconds != null && w.durationSeconds > 0) {
+      return this.formatSeconds(w.durationSeconds);
+    }
+
+    return '0s';
+  }
+
+  formatSeconds(totalSeconds: number): string {
+    const sec = Math.max(0, Math.floor(totalSeconds));
+    const hours = Math.floor(sec / 3600);
+    const minutes = Math.floor((sec % 3600) / 60);
+    const remainingSeconds = sec % 60;
+
+    if (hours > 0) {
+      if (minutes > 0 && remainingSeconds > 0) {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+      }
+      if (minutes > 0) {
+        return `${hours}h ${minutes}m`;
+      }
+      if (remainingSeconds > 0) {
+        return `${hours}h ${remainingSeconds}s`;
+      }
+      return `${hours}h`;
+    }
+    if (minutes > 0) {
+      if (remainingSeconds > 0) {
+        return `${minutes}m ${remainingSeconds}s`;
+      }
+      return `${minutes}m`;
+    }
+    return `${remainingSeconds}s`;
+  }
+
+  getTotalVolume(): number {
+    const w = this.workout();
+    if (!w || !w.exercises) return 0;
+    let total = 0;
+    for (const ex of w.exercises) {
+      for (const set of ex.sets || []) {
+        if (set.isCompleted && set.weightKg && set.reps) {
+          total += Number(set.weightKg) * Number(set.reps);
+        }
+      }
+    }
+    return Math.round(total * 100) / 100;
+  }
+
+  getCompletedSetsCount(): number {
+    const w = this.workout();
+    if (!w || !w.exercises) return 0;
+    let count = 0;
+    for (const ex of w.exercises) {
+      for (const set of ex.sets || []) {
+        if (set.isCompleted) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  getTotalSetsCount(): number {
+    const w = this.workout();
+    if (!w || !w.exercises) return 0;
+    let count = 0;
+    for (const ex of w.exercises) {
+      count += (ex.sets || []).length;
+    }
+    return count;
   }
 
   startEditTitle(): void {
@@ -91,6 +221,102 @@ export class WorkoutDetailComponent implements OnInit {
         this.workout.update((w) => (w ? { ...w, title: newTitle } : null));
         this.isSavingTitle.set(false);
         this.isEditingTitle.set(false);
+      },
+    });
+  }
+
+  getExerciseKey(exercise: WorkoutExercise): number {
+    return exercise.id ?? exercise.orderIndex;
+  }
+
+  isEditingNotes(exercise: WorkoutExercise): boolean {
+    return this.editingNotesExerciseId() === this.getExerciseKey(exercise);
+  }
+
+  isSavingNotes(exercise: WorkoutExercise): boolean {
+    return this.savingNotesExerciseId() === this.getExerciseKey(exercise);
+  }
+
+  startEditNotes(exercise: WorkoutExercise): void {
+    this.exerciseNotesInput = exercise.notes || '';
+    this.editingNotesExerciseId.set(this.getExerciseKey(exercise));
+  }
+
+  cancelEditNotes(): void {
+    this.editingNotesExerciseId.set(null);
+    this.exerciseNotesInput = '';
+  }
+
+  saveExerciseNotes(exercise: WorkoutExercise): void {
+    const newNotes = this.exerciseNotesInput.trim();
+    const key = this.getExerciseKey(exercise);
+    this.savingNotesExerciseId.set(key);
+
+    if (exercise.id) {
+      this.workoutService.saveExerciseNotes(exercise.id, newNotes).subscribe({
+        next: (updatedExercise) => {
+          this.updateLocalExerciseNotes(exercise, updatedExercise?.notes ?? newNotes);
+          this.savingNotesExerciseId.set(null);
+          this.editingNotesExerciseId.set(null);
+        },
+        error: (err) => {
+          console.error('Error saving exercise notes:', err);
+          this.updateLocalExerciseNotes(exercise, newNotes);
+          this.savingNotesExerciseId.set(null);
+          this.editingNotesExerciseId.set(null);
+        },
+      });
+    } else {
+      this.updateLocalExerciseNotes(exercise, newNotes);
+      this.savingNotesExerciseId.set(null);
+      this.editingNotesExerciseId.set(null);
+    }
+  }
+
+  private updateLocalExerciseNotes(exercise: WorkoutExercise, notes: string): void {
+    this.workout.update((w) => {
+      if (!w || !w.exercises) return w;
+      const key = this.getExerciseKey(exercise);
+      const updatedExercises = w.exercises.map((ex) => {
+        if (this.getExerciseKey(ex) === key) {
+          return { ...ex, notes: notes || null };
+        }
+        return ex;
+      });
+      return { ...w, exercises: updatedExercises };
+    });
+  }
+
+  completeTraining(): void {
+    const w = this.workout();
+    if (!w || !w.id || this.isCompletingTraining()) return;
+
+    this.isCompletingTraining.set(true);
+    this.workoutService.completeWorkout(w.id).subscribe({
+      next: (updatedWorkout) => {
+        this.workout.set(updatedWorkout);
+        this.isCompletingTraining.set(false);
+        this.stopDurationTimer();
+      },
+      error: (err) => {
+        console.error('Error completing training:', err);
+        const now = new Date();
+        let duration = w.durationSeconds ?? 0;
+        if (w.startTime) {
+          duration = Math.max(0, Math.floor((now.getTime() - new Date(w.startTime).getTime()) / 1000));
+        }
+        this.workout.update((curr) =>
+          curr
+            ? {
+                ...curr,
+                status: 'COMPLETED',
+                endTime: now,
+                durationSeconds: duration,
+              }
+            : null
+        );
+        this.isCompletingTraining.set(false);
+        this.stopDurationTimer();
       },
     });
   }

@@ -1,6 +1,16 @@
 <div class="workout-detail-container">
   <div class="header-nav">
     <a [routerLink]="['/workouts']" class="back-link">← Back to workouts</a>
+    @if (workout() && workout()!.status !== 'COMPLETED') {
+      <button
+        type="button"
+        class="btn btn-complete-training"
+        (click)="completeTraining()"
+        [disabled]="isCompletingTraining()"
+      >
+        {{ isCompletingTraining() ? 'Completing...' : '✓ Complete Training' }}
+      </button>
+    }
   </div>
 
   @if (isLoading()) {
@@ -44,7 +54,7 @@
             </div>
           } @else {
             <div class="title-display">
-              <h2>{{ getWorkoutTitle(workout()) }}</h2>
+              <h2 (click)="startEditTitle()" class="clickable-title" title="Click to edit workout title">{{ getWorkoutTitle(workout()) }}</h2>
               <button
                 class="btn-edit-title"
                 (click)="startEditTitle()"
@@ -55,6 +65,15 @@
               <span class="status-badge" [class]="workout()!.status?.toLowerCase()">
                 {{ workout()!.status }}
               </span>
+              <span class="stat-badge duration" title="Workout duration">
+                ⏱️ {{ getFormattedDuration() }}
+              </span>
+              <span class="stat-badge volume" title="Volume">
+                🏋️ {{ getTotalVolume() }} kg
+              </span>
+              <span class="stat-badge sets" title="Completed sets">
+                ✓ {{ getCompletedSetsCount() }} / {{ getTotalSetsCount() }} sets
+              </span>
             </div>
           }
         </div>
@@ -62,9 +81,9 @@
         <div class="workout-meta">
           <p><strong>Workout ID:</strong> #{{ workout()!.id }}</p>
           <p><strong>Date:</strong> {{ workout()!.startTime | date:'medium' }}</p>
-          @if (workout()!.durationSeconds) {
-            <p><strong>Duration:</strong> {{ workout()!.durationSeconds }}s</p>
-          }
+          <p><strong>Duration:</strong> {{ getFormattedDuration() }}</p>
+          <p><strong>Volume:</strong> {{ getTotalVolume() }} kg</p>
+          <p><strong>Sets:</strong> {{ getCompletedSetsCount() }} / {{ getTotalSetsCount() }}</p>
         </div>
       </div>
 
@@ -89,7 +108,7 @@
             @for (item of workout()!.exercises; track item.id || item.orderIndex) {
               <div class="exercise-card">
                 <div class="exercise-card-header">
-                  <div>
+                  <div class="exercise-header-info">
                     <h4>
                       {{ item.orderIndex }}.
                       <a
@@ -101,119 +120,160 @@
                         {{ item.exercise.name }}
                       </a>
                     </h4>
-                    <span class="category-badge">
-                      {{ item.exercise.category || 'Exercise' }}
-                      @if (item.exercise.primaryMuscle) {
-                        • {{ item.exercise.primaryMuscle }}
-                      }
-                    </span>
+
+                    @if (isEditingNotes(item)) {
+                      <div class="exercise-notes-edit-form">
+                        <input
+                          type="text"
+                          class="exercise-notes-input"
+                          [(ngModel)]="exerciseNotesInput"
+                          (keydown.enter)="saveExerciseNotes(item)"
+                          (keydown.escape)="cancelEditNotes()"
+                          placeholder="Add notes..."
+                          autofocus
+                        />
+                        <button
+                          class="btn btn-save btn-sm"
+                          (click)="saveExerciseNotes(item)"
+                          [disabled]="isSavingNotes(item)"
+                        >
+                          {{ isSavingNotes(item) ? 'Saving...' : 'Save' }}
+                        </button>
+                        <button
+                          class="btn btn-cancel btn-sm"
+                          (click)="cancelEditNotes()"
+                          [disabled]="isSavingNotes(item)"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    } @else {
+                      <div
+                        class="exercise-notes-display"
+                        (click)="startEditNotes(item)"
+                        title="Click to edit notes"
+                      >
+                        @if (item.notes) {
+                          <span class="notes-text">{{ item.notes }}</span>
+                        } @else {
+                          <span class="notes-placeholder">Add notes...</span>
+                        }
+                        <button
+                          type="button"
+                          class="btn-edit-notes"
+                          (click)="startEditNotes(item); $event.stopPropagation()"
+                          title="Edit notes"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    }
                   </div>
                   @if (item.restTimerSeconds) {
                     <span class="rest-timer">Rest: {{ item.restTimerSeconds }}s</span>
                   }
                 </div>
 
-                @if (item.notes) {
-                  <p class="exercise-notes">{{ item.notes }}</p>
-                }
-
                 @if (item.sets && item.sets.length > 0) {
-                  <table class="sets-table">
-                    <thead>
-                      <tr>
-                        <th>Set</th>
-                        <th>Previous</th>
-                        <th>Weight (kg)</th>
-                        <th>Reps</th>
-                        <th>Complete</th>
-                        <th class="col-actions"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (set of item.sets; track set.id || set.setNumber) {
-                        <tr [class.completed]="set.isCompleted">
-                          <td class="col-set-num">{{ set.setNumber }}</td>
-                          <td class="col-previous">
-                            <span class="prev-val">{{ formatPrevious(set) }}</span>
-                          </td>
-                          <td class="col-editable" (click)="startEdit(set, 'weight')">
-                            @if (isEditing(set.id, 'weight')) {
-                              <input
-                                #weightInput
-                                [id]="'input-weight-' + set.id"
-                                type="number"
-                                step="0.5"
-                                min="0"
-                                class="inline-num-input"
-                                [value]="set.weightKg"
-                                (click)="$event.stopPropagation()"
-                                (change)="saveWeight(set, weightInput.value)"
-                                (blur)="saveWeight(set, weightInput.value)"
-                                (keydown.enter)="saveWeight(set, weightInput.value)"
-                                (keydown.escape)="stopEdit()"
-                              />
-                            } @else {
-                              <div class="cell-display" title="Kliknij, aby edytować ciężar">
-                                <span class="cell-val">{{ set.weightKg }}</span>
-                                <span class="cell-unit">kg</span>
-                                <span class="edit-icon">✏️</span>
-                              </div>
-                            }
-                          </td>
-                          <td class="col-editable" (click)="startEdit(set, 'reps')">
-                            @if (isEditing(set.id, 'reps')) {
-                              <input
-                                #repsInput
-                                [id]="'input-reps-' + set.id"
-                                type="number"
-                                step="1"
-                                min="0"
-                                class="inline-num-input"
-                                [value]="set.reps"
-                                (click)="$event.stopPropagation()"
-                                (change)="saveReps(set, repsInput.value)"
-                                (blur)="saveReps(set, repsInput.value)"
-                                (keydown.enter)="saveReps(set, repsInput.value)"
-                                (keydown.escape)="stopEdit()"
-                              />
-                            } @else {
-                              <div class="cell-display" title="Kliknij, aby edytować powtórzenia">
-                                <span class="cell-val">{{ set.reps }}</span>
-                                <span class="edit-icon">✏️</span>
-                              </div>
-                            }
-                          </td>
-                          <td>
-                            <button
-                              type="button"
-                              class="btn btn-complete-set"
-                              [class.completed]="set.isCompleted"
-                              [disabled]="savingSetId() === set.id"
-                              (click)="completeSet(set)"
-                            >
-                              @if (set.isCompleted) {
-                                Reset
-                              } @else {
-                                Complete
-                              }
-                            </button>
-                          </td>
-                          <td class="col-delete">
-                            <button
-                              type="button"
-                              class="btn-delete-set"
-                              [disabled]="isDeletingSet() === set.id"
-                              (click)="deleteSet(set)"
-                              title="Usuń serię"
-                              aria-label="Usuń serię"
-                            >
-                              🗑️
-                            </button>
-                          </td>
+                  <div class="table-responsive">
+                    <table class="sets-table">
+                      <thead>
+                        <tr>
+                          <th>Set</th>
+                          <th>Previous</th>
+                          <th>Weight (kg)</th>
+                          <th>Reps</th>
+                          <th>Complete</th>
+                          <th class="col-actions"></th>
                         </tr>
-                      }
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        @for (set of item.sets; track set.id || set.setNumber) {
+                          <tr [class.completed]="set.isCompleted">
+                            <td class="col-set-num">{{ set.setNumber }}</td>
+                            <td class="col-previous">
+                              <span class="prev-val">{{ formatPrevious(set) }}</span>
+                            </td>
+                            <td class="col-editable" (click)="startEdit(set, 'weight')">
+                              @if (isEditing(set.id, 'weight')) {
+                                <input
+                                  #weightInput
+                                  [id]="'input-weight-' + set.id"
+                                  type="number"
+                                  inputmode="decimal"
+                                  step="0.5"
+                                  min="0"
+                                  class="inline-num-input"
+                                  [value]="set.weightKg"
+                                  (click)="$event.stopPropagation()"
+                                  (change)="saveWeight(set, weightInput.value)"
+                                  (blur)="saveWeight(set, weightInput.value)"
+                                  (keydown.enter)="saveWeight(set, weightInput.value)"
+                                  (keydown.escape)="stopEdit()"
+                                />
+                              } @else {
+                                <div class="cell-display" title="Kliknij, aby edytować ciężar">
+                                  <span class="cell-val">{{ set.weightKg }}</span>
+                                  <span class="edit-icon">✏️</span>
+                                </div>
+                              }
+                            </td>
+                            <td class="col-editable" (click)="startEdit(set, 'reps')">
+                              @if (isEditing(set.id, 'reps')) {
+                                <input
+                                  #repsInput
+                                  [id]="'input-reps-' + set.id"
+                                  type="number"
+                                  inputmode="numeric"
+                                  step="1"
+                                  min="0"
+                                  class="inline-num-input"
+                                  [value]="set.reps"
+                                  (click)="$event.stopPropagation()"
+                                  (change)="saveReps(set, repsInput.value)"
+                                  (blur)="saveReps(set, repsInput.value)"
+                                  (keydown.enter)="saveReps(set, repsInput.value)"
+                                  (keydown.escape)="stopEdit()"
+                                />
+                              } @else {
+                                <div class="cell-display" title="Kliknij, aby edytować powtórzenia">
+                                  <span class="cell-val">{{ set.reps }}</span>
+                                  <span class="edit-icon">✏️</span>
+                                </div>
+                              }
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                class="btn btn-complete-set"
+                                [class.completed]="set.isCompleted"
+                                [disabled]="savingSetId() === set.id"
+                                (click)="completeSet(set)"
+                              >
+                                @if (set.isCompleted) {
+                                  Reset
+                                } @else {
+                                  Complete
+                                }
+                              </button>
+                            </td>
+                            <td class="col-delete">
+                              <button
+                                type="button"
+                                class="btn-delete-set"
+                                [disabled]="isDeletingSet() === set.id"
+                                (click)="deleteSet(set)"
+                                title="Usuń serię"
+                                aria-label="Usuń serię"
+                              >
+                                🗑️
+                              </button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
                 } @else {
                   <p class="empty-sets">No sets recorded for this exercise.</p>
                 }
@@ -245,6 +305,19 @@
             >
               Add your first exercise
             </a>
+          </div>
+        }
+
+        @if (workout() && workout()!.status !== 'COMPLETED') {
+          <div class="complete-training-footer">
+            <button
+              type="button"
+              class="btn btn-complete-training btn-lg"
+              (click)="completeTraining()"
+              [disabled]="isCompletingTraining()"
+            >
+              {{ isCompletingTraining() ? 'Completing...' : '✓ Complete Training' }}
+            </button>
           </div>
         }
       </div>

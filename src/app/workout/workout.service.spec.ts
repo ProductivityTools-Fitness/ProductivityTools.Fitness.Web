@@ -72,4 +72,44 @@ describe('WorkoutService', () => {
     expect(req.request.body).toEqual({ id: 15 });
     req.flush(true);
   });
+
+  it('should post saveExerciseNotes with workoutExerciseId and notes', () => {
+    const mockUpdatedExercise = {
+      id: 25,
+      orderIndex: 1,
+      exercise: { id: 1, name: 'Squat', isSystem: true },
+      notes: 'Drop set on last set',
+    };
+
+    service.saveExerciseNotes(25, 'Drop set on last set').subscribe((res) => {
+      expect(res).toEqual(mockUpdatedExercise as any);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/workout/updateExerciseNotes`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({
+      workoutExerciseId: 25,
+      notes: 'Drop set on last set',
+    });
+    req.flush(mockUpdatedExercise);
+  });
+
+  it('should post completeWorkout with workoutId in URL and body', () => {
+    const mockCompletedWorkout: Workout = {
+      id: 50,
+      title: 'Trening #50',
+      status: 'COMPLETED',
+      durationSeconds: 3600,
+      exercises: [],
+    };
+
+    service.completeWorkout(50).subscribe((res) => {
+      expect(res).toEqual(mockCompletedWorkout);
+    });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/workout/completeWorkout`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ workoutId: 50 });
+    req.flush(mockCompletedWorkout);
+  });
 });

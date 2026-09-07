@@ -332,6 +332,267 @@ describe('WorkoutDetailComponent', () => {
       })
     ).toBe('—');
   });
+
+  it('should format seconds into readable duration', () => {
+    expect(component.formatSeconds(0)).toBe('0s');
+    expect(component.formatSeconds(45)).toBe('45s');
+    expect(component.formatSeconds(60)).toBe('1m');
+    expect(component.formatSeconds(75)).toBe('1m 15s');
+    expect(component.formatSeconds(3600)).toBe('1h');
+    expect(component.formatSeconds(3660)).toBe('1h 1m');
+    expect(component.formatSeconds(3665)).toBe('1h 1m 5s');
+  });
+
+  it('should render duration in the upper part of workout details', () => {
+    const workoutWithDuration: Workout = {
+      id: 20,
+      title: 'Trening #20',
+      durationSeconds: 4500,
+      exercises: [],
+    };
+    component.workout.set(workoutWithDuration);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const durationBadge = compiled.querySelector<HTMLElement>('.stat-badge.duration');
+    expect(durationBadge?.textContent).toContain('1h 15m');
+
+    const metaText = compiled.querySelector<HTMLElement>('.workout-meta');
+    expect(metaText?.textContent).toContain('Duration: 1h 15m');
+  });
+
+  it('should calculate live duration from startTime for in-progress workout and advance on tick', () => {
+    const baseTime = new Date('2026-09-07T12:00:00Z');
+    const startTime = new Date('2026-09-07T11:58:30Z'); // 90 seconds ago
+
+    component.currentTime.set(baseTime);
+    const activeWorkout: Workout = {
+      id: 25,
+      title: 'Trening #25',
+      status: 'IN_PROGRESS',
+      startTime: startTime.toISOString(),
+      durationSeconds: 0,
+      exercises: [],
+    };
+    component.workout.set(activeWorkout);
+    fixture.detectChanges();
+
+    expect(component.getFormattedDuration()).toBe('1m 30s');
+
+    // Advance current time by 15 seconds
+    const advancedTime = new Date('2026-09-07T12:00:15Z');
+    component.currentTime.set(advancedTime);
+    fixture.detectChanges();
+
+    expect(component.getFormattedDuration()).toBe('1m 45s');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const durationBadge = compiled.querySelector<HTMLElement>('.stat-badge.duration');
+    expect(durationBadge?.textContent).toContain('1m 45s');
+  });
+
+  it('should clean up duration timer on destroy', () => {
+    const stopTimerSpy = vi.spyOn(component, 'stopDurationTimer');
+    component.ngOnDestroy();
+    expect(stopTimerSpy).toHaveBeenCalled();
+  });
+
+  it('should calculate Volume and Sets for completed sets and render in the upper section', () => {
+    const workout: Workout = {
+      id: 21,
+      title: 'Trening #21',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 1, name: 'Squat', isSystem: true },
+          sets: [
+            { id: 1, setNumber: 1, weightKg: 100, reps: 10, isCompleted: true }, // 1000kg
+            { id: 2, setNumber: 2, weightKg: 100, reps: 8, isCompleted: true },  // 800kg
+            { id: 3, setNumber: 3, weightKg: 100, reps: 6, isCompleted: false }, // not completed
+          ],
+        },
+        {
+          orderIndex: 2,
+          exercise: { id: 2, name: 'Bench Press', isSystem: true },
+          sets: [
+            { id: 4, setNumber: 1, weightKg: 60, reps: 10, isCompleted: true },  // 600kg
+            { id: 5, setNumber: 2, weightKg: 60, reps: 10, isCompleted: false }, // not completed
+          ],
+        },
+      ],
+    };
+    component.workout.set(workout);
+    fixture.detectChanges();
+
+    // Volume: 1000 + 800 + 600 = 2400 kg
+    expect(component.getTotalVolume()).toBe(2400);
+    // Completed sets: 3
+    expect(component.getCompletedSetsCount()).toBe(3);
+    // Total sets: 5
+    expect(component.getTotalSetsCount()).toBe(5);
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const volumeBadge = compiled.querySelector<HTMLElement>('.stat-badge.volume');
+    expect(volumeBadge?.textContent).toContain('2400 kg');
+
+    const setsBadge = compiled.querySelector<HTMLElement>('.stat-badge.sets');
+    expect(setsBadge?.textContent).toContain('3 / 5 sets');
+
+    const metaText = compiled.querySelector<HTMLElement>('.workout-meta');
+    expect(metaText?.textContent).toContain('Volume: 2400 kg');
+    expect(metaText?.textContent).toContain('Sets: 3 / 5');
+  });
+
+  it('should display exercise notes or placeholder and allow editing on click', () => {
+    const workout: Workout = {
+      id: 30,
+      title: 'Trening #30',
+      exercises: [
+        {
+          id: 101,
+          orderIndex: 1,
+          exercise: { id: 1, name: 'Squat', isSystem: true },
+          notes: 'Focus on depth',
+        },
+        {
+          id: 102,
+          orderIndex: 2,
+          exercise: { id: 2, name: 'Bench Press', isSystem: true },
+          notes: null,
+        },
+      ],
+    };
+    component.workout.set(workout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const notesDisplays = compiled.querySelectorAll<HTMLElement>('.exercise-notes-display');
+    expect(notesDisplays.length).toBe(2);
+
+    expect(notesDisplays[0].textContent).toContain('Focus on depth');
+    expect(notesDisplays[1].textContent).toContain('Add notes...');
+
+    // Click on notes to start edit
+    notesDisplays[0].click();
+    fixture.detectChanges();
+
+    expect(component.isEditingNotes(workout.exercises![0])).toBe(true);
+    expect(component.exerciseNotesInput).toBe('Focus on depth');
+
+    const editInput = compiled.querySelector<HTMLInputElement>('.exercise-notes-input');
+    expect(editInput).toBeTruthy();
+
+    // Cancel edit
+    component.cancelEditNotes();
+    fixture.detectChanges();
+
+    expect(component.isEditingNotes(workout.exercises![0])).toBe(false);
+  });
+
+  it('should call workoutService.saveExerciseNotes and update local workout on save', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const workoutExercise = {
+      id: 101,
+      orderIndex: 1,
+      exercise: { id: 1, name: 'Squat', isSystem: true },
+      notes: 'Initial note',
+    };
+    const workout: Workout = {
+      id: 31,
+      title: 'Trening #31',
+      exercises: [workoutExercise],
+    };
+    component.workout.set(workout);
+    fixture.detectChanges();
+
+    const updatedWorkoutExercise = {
+      ...workoutExercise,
+      notes: 'Updated note from server',
+    };
+    const saveNotesSpy = vi
+      .spyOn(workoutService, 'saveExerciseNotes')
+      .mockReturnValue(of(updatedWorkoutExercise as any));
+
+    component.startEditNotes(workoutExercise);
+    component.exerciseNotesInput = 'Updated note from server';
+    component.saveExerciseNotes(workoutExercise);
+
+    expect(saveNotesSpy).toHaveBeenCalledWith(101, 'Updated note from server');
+    expect(component.workout()?.exercises?.[0].notes).toBe('Updated note from server');
+    expect(component.isEditingNotes(workoutExercise)).toBe(false);
+  });
+
+  it('should start editing workout title when clicking on the title text', () => {
+    const workout: Workout = {
+      id: 32,
+      title: 'Leg Day',
+      exercises: [],
+    };
+    component.workout.set(workout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const titleHeader = compiled.querySelector<HTMLElement>('.clickable-title');
+    expect(titleHeader).toBeTruthy();
+
+    titleHeader?.click();
+    fixture.detectChanges();
+
+    expect(component.isEditingTitle()).toBe(true);
+    expect(component.titleInput).toBe('Leg Day');
+  });
+
+  it('should render Complete Training button for in-progress workout and call completeWorkout on click', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const workout: Workout = {
+      id: 40,
+      title: 'Trening #40',
+      status: 'IN_PROGRESS',
+      exercises: [],
+    };
+    component.workout.set(workout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const completeBtns = compiled.querySelectorAll<HTMLButtonElement>('.btn-complete-training');
+    expect(completeBtns.length).toBeGreaterThan(0);
+    expect(completeBtns[0].textContent).toContain('Complete Training');
+
+    const completedWorkout: Workout = {
+      ...workout,
+      status: 'COMPLETED',
+      durationSeconds: 1800,
+    };
+    const completeSpy = vi
+      .spyOn(workoutService, 'completeWorkout')
+      .mockReturnValue(of(completedWorkout));
+
+    completeBtns[0].click();
+    fixture.detectChanges();
+
+    expect(completeSpy).toHaveBeenCalledWith(40);
+    expect(component.workout()?.status).toBe('COMPLETED');
+
+    const remainingBtns = compiled.querySelectorAll<HTMLButtonElement>('.btn-complete-training');
+    expect(remainingBtns.length).toBe(0);
+  });
+
+  it('should not render Complete Training button when workout is already COMPLETED', () => {
+    const completedWorkout: Workout = {
+      id: 41,
+      title: 'Trening #41',
+      status: 'COMPLETED',
+      durationSeconds: 2400,
+      exercises: [],
+    };
+    component.workout.set(completedWorkout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const completeBtns = compiled.querySelectorAll<HTMLButtonElement>('.btn-complete-training');
+    expect(completeBtns.length).toBe(0);
+  });
 });
+
 
 
