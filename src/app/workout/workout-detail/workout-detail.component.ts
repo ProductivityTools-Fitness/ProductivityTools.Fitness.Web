@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +23,12 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   currentTime = signal<Date>(new Date());
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
+  isEditingCompleted = signal<boolean>(false);
+  isReadOnly = computed<boolean>(() => {
+    const w = this.workout();
+    return w?.status === 'COMPLETED' && !this.isEditingCompleted();
+  });
+
   isEditingTitle = signal<boolean>(false);
   titleInput = '';
   isSavingTitle = signal<boolean>(false);
@@ -30,6 +36,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   editingCell = signal<{ setId: number; field: 'weight' | 'reps' } | null>(null);
   savingSetId = signal<number | null>(null);
   isDeletingSet = signal<number | null>(null);
+  setToDelete = signal<WorkoutSet | null>(null);
   editingNotesExerciseId = signal<number | null>(null);
   exerciseNotesInput = '';
   savingNotesExerciseId = signal<number | null>(null);
@@ -193,7 +200,18 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
     return count;
   }
 
+  toggleEditCompleted(): void {
+    this.isEditingCompleted.update((v) => !v);
+    if (!this.isEditingCompleted()) {
+      this.stopEdit();
+      this.cancelEditTitle();
+      this.cancelEditNotes();
+      this.cancelDeleteSet();
+    }
+  }
+
   startEditTitle(): void {
+    if (this.isReadOnly()) return;
     this.titleInput = this.getWorkoutTitle(this.workout());
     this.isEditingTitle.set(true);
   }
@@ -203,6 +221,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   }
 
   saveTitle(): void {
+    if (this.isReadOnly()) return;
     const newTitle = this.titleInput.trim();
     const currentWorkout = this.workout();
     if (!currentWorkout || !currentWorkout.id || !newTitle) {
@@ -238,6 +257,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   }
 
   startEditNotes(exercise: WorkoutExercise): void {
+    if (this.isReadOnly()) return;
     this.exerciseNotesInput = exercise.notes || '';
     this.editingNotesExerciseId.set(this.getExerciseKey(exercise));
   }
@@ -248,6 +268,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   }
 
   saveExerciseNotes(exercise: WorkoutExercise): void {
+    if (this.isReadOnly()) return;
     const newNotes = this.exerciseNotesInput.trim();
     const key = this.getExerciseKey(exercise);
     this.savingNotesExerciseId.set(key);
@@ -292,6 +313,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
     if (!w || !w.id || this.isCompletingTraining()) return;
 
     this.isCompletingTraining.set(true);
+    this.isEditingCompleted.set(false);
     this.workoutService.completeWorkout(w.id).subscribe({
       next: (updatedWorkout) => {
         this.workout.set(updatedWorkout);
@@ -324,6 +346,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   loadWorkout(id: number): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
+    this.isEditingCompleted.set(false);
 
     this.workoutService.getWorkout(id).subscribe({
       next: (workout) => {
@@ -339,6 +362,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   }
 
   addSet(exerciseId: number): void {
+    if (this.isReadOnly()) return;
     const currentWorkout = this.workout();
     if (!currentWorkout || !currentWorkout.id || !exerciseId) {
       return;
@@ -364,7 +388,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   }
 
   startEdit(set: WorkoutSet, field: 'weight' | 'reps'): void {
-    if (!set.id) return;
+    if (this.isReadOnly() || !set.id) return;
     this.editingCell.set({ setId: set.id, field });
     setTimeout(() => {
       const inputEl = document.getElementById(`input-${field}-${set.id}`) as HTMLInputElement;
@@ -380,7 +404,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   }
 
   saveWeight(set: WorkoutSet, rawValue: string | number): void {
-    if (!this.isEditing(set.id, 'weight')) {
+    if (this.isReadOnly() || !this.isEditing(set.id, 'weight')) {
       return;
     }
     this.stopEdit();
@@ -411,7 +435,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   }
 
   saveReps(set: WorkoutSet, rawValue: string | number): void {
-    if (!this.isEditing(set.id, 'reps')) {
+    if (this.isReadOnly() || !this.isEditing(set.id, 'reps')) {
       return;
     }
     this.stopEdit();
@@ -472,7 +496,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   }
 
   completeSet(set: WorkoutSet): void {
-    if (!set.id) return;
+    if (this.isReadOnly() || !set.id) return;
     if (this.savingSetId() === set.id) return;
 
     const previousStatus = set.isCompleted;
@@ -492,8 +516,24 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
     );
   }
 
+  promptDeleteSet(set: WorkoutSet): void {
+    if (this.isReadOnly()) return;
+    this.setToDelete.set(set);
+  }
+
+  cancelDeleteSet(): void {
+    this.setToDelete.set(null);
+  }
+
+  confirmDeleteSet(): void {
+    const set = this.setToDelete();
+    if (!set) return;
+    this.setToDelete.set(null);
+    this.deleteSet(set);
+  }
+
   deleteSet(set: WorkoutSet): void {
-    if (!set.id) return;
+    if (this.isReadOnly() || !set.id) return;
     if (this.isDeletingSet() === set.id) return;
 
     this.isDeletingSet.set(set.id);

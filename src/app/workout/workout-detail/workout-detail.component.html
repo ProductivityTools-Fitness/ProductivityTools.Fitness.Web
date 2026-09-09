@@ -8,7 +8,7 @@
         (click)="completeTraining()"
         [disabled]="isCompletingTraining()"
       >
-        {{ isCompletingTraining() ? 'Completing...' : '✓ Complete Training' }}
+        {{ isCompletingTraining() ? 'Completing...' : 'Complete Training' }}
       </button>
     }
   </div>
@@ -54,14 +54,18 @@
             </div>
           } @else {
             <div class="title-display">
-              <h2 (click)="startEditTitle()" class="clickable-title" title="Click to edit workout title">{{ getWorkoutTitle(workout()) }}</h2>
-              <button
-                class="btn-edit-title"
-                (click)="startEditTitle()"
-                title="Edit workout title"
-              >
-                ✏️
-              </button>
+              @if (!isReadOnly()) {
+                <h2 (click)="startEditTitle()" class="clickable-title" title="Click to edit workout title">{{ getWorkoutTitle(workout()) }}</h2>
+                <button
+                  class="btn-edit-title"
+                  (click)="startEditTitle()"
+                  title="Edit workout title"
+                >
+                  ✏️
+                </button>
+              } @else {
+                <h2>{{ getWorkoutTitle(workout()) }}</h2>
+              }
             </div>
           }
         </div>
@@ -83,13 +87,15 @@
       <div class="exercises-section">
         <div class="section-header">
           <h3>Exercises ({{ workout()!.exercises?.length || 0 }})</h3>
-          <a
-            class="btn btn-add"
-            [routerLink]="['/exercises']"
-            [queryParams]="{ workoutId: workout()!.id }"
-          >
-            + Add Exercise
-          </a>
+          @if (!isReadOnly()) {
+            <a
+              class="btn btn-add"
+              [routerLink]="['/exercises']"
+              [queryParams]="{ workoutId: workout()!.id }"
+            >
+              + Add Exercise
+            </a>
+          }
         </div>
 
         @if (workout()!.exercises && workout()!.exercises!.length > 0) {
@@ -136,25 +142,28 @@
                           Cancel
                         </button>
                       </div>
-                    } @else {
+                    } @else if (item.notes || !isReadOnly()) {
                       <div
                         class="exercise-notes-display"
-                        (click)="startEditNotes(item)"
-                        title="Click to edit notes"
+                        [class.readonly]="isReadOnly()"
+                        (click)="!isReadOnly() && startEditNotes(item)"
+                        [title]="isReadOnly() ? '' : 'Click to edit notes'"
                       >
                         @if (item.notes) {
                           <span class="notes-text">{{ item.notes }}</span>
                         } @else {
                           <span class="notes-placeholder">Add notes...</span>
                         }
-                        <button
-                          type="button"
-                          class="btn-edit-notes"
-                          (click)="startEditNotes(item); $event.stopPropagation()"
-                          title="Edit notes"
-                        >
-                          ✏️
-                        </button>
+                        @if (!isReadOnly()) {
+                          <button
+                            type="button"
+                            class="btn-edit-notes"
+                            (click)="startEditNotes(item); $event.stopPropagation()"
+                            title="Edit notes"
+                          >
+                            ✏️
+                          </button>
+                        }
                       </div>
                     }
                   </div>
@@ -170,10 +179,12 @@
                         <tr>
                           <th>Set</th>
                           <th>Previous</th>
-                          <th>Weight (kg)</th>
-                          <th>Reps</th>
-                          <th>Complete</th>
-                          <th class="col-actions"></th>
+                          <th class="col-weight">Weight (kg)</th>
+                          <th class="col-reps">Reps</th>
+                          <th class="col-complete" title="Complete"></th>
+                          @if (!isReadOnly()) {
+                            <th class="col-actions"></th>
+                          }
                         </tr>
                       </thead>
                       <tbody>
@@ -183,8 +194,8 @@
                             <td class="col-previous">
                               <span class="prev-val">{{ formatPrevious(set) }}</span>
                             </td>
-                            <td class="col-editable" (click)="startEdit(set, 'weight')">
-                              @if (isEditing(set.id, 'weight')) {
+                            <td class="col-weight" [class.col-editable]="!isReadOnly()" (click)="!isReadOnly() && startEdit(set, 'weight')">
+                              @if (!isReadOnly() && isEditing(set.id, 'weight')) {
                                 <input
                                   #weightInput
                                   [id]="'input-weight-' + set.id"
@@ -201,14 +212,16 @@
                                   (keydown.escape)="stopEdit()"
                                 />
                               } @else {
-                                <div class="cell-display" title="Kliknij, aby edytować ciężar">
+                                <div class="cell-display" [class.readonly]="isReadOnly()" [title]="isReadOnly() ? '' : 'Kliknij, aby edytować ciężar'">
                                   <span class="cell-val">{{ set.weightKg }}</span>
-                                  <span class="edit-icon">✏️</span>
+                                  @if (!isReadOnly()) {
+                                    <span class="edit-icon">✏️</span>
+                                  }
                                 </div>
                               }
                             </td>
-                            <td class="col-editable" (click)="startEdit(set, 'reps')">
-                              @if (isEditing(set.id, 'reps')) {
+                            <td class="col-reps" [class.col-editable]="!isReadOnly()" (click)="!isReadOnly() && startEdit(set, 'reps')">
+                              @if (!isReadOnly() && isEditing(set.id, 'reps')) {
                                 <input
                                   #repsInput
                                   [id]="'input-reps-' + set.id"
@@ -225,39 +238,46 @@
                                   (keydown.escape)="stopEdit()"
                                 />
                               } @else {
-                                <div class="cell-display" title="Kliknij, aby edytować powtórzenia">
+                                <div class="cell-display" [class.readonly]="isReadOnly()" [title]="isReadOnly() ? '' : 'Kliknij, aby edytować powtórzenia'">
                                   <span class="cell-val">{{ set.reps }}</span>
-                                  <span class="edit-icon">✏️</span>
+                                  @if (!isReadOnly()) {
+                                    <span class="edit-icon">✏️</span>
+                                  }
                                 </div>
                               }
                             </td>
-                            <td>
+                            <td class="col-complete">
                               <button
                                 type="button"
-                                class="btn btn-complete-set"
+                                class="btn-check-set btn-complete-set"
+                                [class.checked]="set.isCompleted"
                                 [class.completed]="set.isCompleted"
-                                [disabled]="savingSetId() === set.id"
-                                (click)="completeSet(set)"
+                                [disabled]="isReadOnly() || savingSetId() === set.id"
+                                (click)="!isReadOnly() && completeSet(set)"
+                                [title]="isReadOnly() ? (set.isCompleted ? 'Completed' : 'Not completed') : (set.isCompleted ? 'Reset set' : 'Complete set')"
+                                [attr.aria-label]="isReadOnly() ? (set.isCompleted ? 'Completed' : 'Not completed') : (set.isCompleted ? 'Reset set' : 'Complete set')"
                               >
                                 @if (set.isCompleted) {
-                                  Reset
-                                } @else {
-                                  Complete
+                                  <svg class="check-icon" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3.5 8.5 6.5 11.5 12.5 4.5" />
+                                  </svg>
                                 }
                               </button>
                             </td>
-                            <td class="col-delete">
-                              <button
-                                type="button"
-                                class="btn-delete-set"
-                                [disabled]="isDeletingSet() === set.id"
-                                (click)="deleteSet(set)"
-                                title="Usuń serię"
-                                aria-label="Usuń serię"
-                              >
-                                🗑️
-                              </button>
-                            </td>
+                            @if (!isReadOnly()) {
+                              <td class="col-delete">
+                                <button
+                                  type="button"
+                                  class="btn-delete-set"
+                                  [disabled]="isDeletingSet() === set.id"
+                                  (click)="promptDeleteSet(set)"
+                                  title="Usuń serię"
+                                  aria-label="Usuń serię"
+                                >
+                                  🗑️
+                                </button>
+                              </td>
+                            }
                           </tr>
                         }
                       </tbody>
@@ -267,54 +287,116 @@
                   <p class="empty-sets">No sets recorded for this exercise.</p>
                 }
 
-                <div class="exercise-card-footer">
-                  <button
-                    type="button"
-                    class="btn btn-add-set"
-                    (click)="addSet(item.exercise.id)"
-                    [disabled]="isAddingSet() === item.exercise.id"
-                  >
-                    @if (isAddingSet() === item.exercise.id) {
-                      Adding set...
-                    } @else {
-                      + Add set
-                    }
-                  </button>
-                </div>
+                @if (!isReadOnly()) {
+                  <div class="exercise-card-footer">
+                    <button
+                      type="button"
+                      class="btn btn-add-set"
+                      (click)="addSet(item.exercise.id)"
+                      [disabled]="isAddingSet() === item.exercise.id"
+                    >
+                      @if (isAddingSet() === item.exercise.id) {
+                        Adding set...
+                      } @else {
+                        + Add set
+                      }
+                    </button>
+                  </div>
+                }
               </div>
             }
           </div>
         } @else {
           <div class="empty-exercises">
             <p>No exercises added to this workout yet.</p>
-            <a
-              class="btn btn-add"
-              [routerLink]="['/exercises']"
-              [queryParams]="{ workoutId: workout()!.id }"
-            >
-              Add your first exercise
-            </a>
+            @if (!isReadOnly()) {
+              <a
+                class="btn btn-add"
+                [routerLink]="['/exercises']"
+                [queryParams]="{ workoutId: workout()!.id }"
+              >
+                Add your first exercise
+              </a>
+            }
           </div>
         }
 
-        @if (workout() && workout()!.status !== 'COMPLETED') {
-          <div class="complete-training-footer">
+        <div class="workout-actions-footer">
+          @if (workout()!.status !== 'COMPLETED') {
             <button
               type="button"
-              class="btn btn-complete-training btn-lg"
+              class="btn btn-action-lg btn-complete-training"
               (click)="completeTraining()"
               [disabled]="isCompletingTraining()"
             >
               {{ isCompletingTraining() ? 'Completing...' : '✓ Complete Training' }}
             </button>
-          </div>
-        }
+          } @else if (isEditingCompleted()) {
+            <button
+              type="button"
+              class="btn btn-action-lg btn-done-editing"
+              (click)="toggleEditCompleted()"
+            >
+              ✓ Done Editing
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="btn btn-action-lg btn-edit-training"
+              (click)="toggleEditCompleted()"
+            >
+              ✏️ Edit Training
+            </button>
+          }
+        </div>
       </div>
     </div>
   } @else {
     <div class="no-workout">
       <p>No workout selected.</p>
       <a [routerLink]="['/workouts']">Go to workout list</a>
+    </div>
+  }
+
+  @if (setToDelete()) {
+    <div class="modal-backdrop" (click)="cancelDeleteSet()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h4>Delete Set</h4>
+          <button
+            type="button"
+            class="btn-modal-close"
+            (click)="cancelDeleteSet()"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong>Set {{ setToDelete()!.setNumber }}</strong>?</p>
+          @if (setToDelete()!.weightKg || setToDelete()!.reps) {
+            <p class="modal-set-preview">
+              {{ setToDelete()!.weightKg }} kg × {{ setToDelete()!.reps }} reps
+            </p>
+          }
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-modal-cancel"
+            (click)="cancelDeleteSet()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-modal-delete"
+            (click)="confirmDeleteSet()"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
     </div>
   }
 </div>

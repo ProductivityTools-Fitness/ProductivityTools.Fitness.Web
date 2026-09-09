@@ -220,6 +220,40 @@ describe('WorkoutDetailComponent', () => {
     expect(component.workout()?.exercises?.[0].sets?.[0].isCompleted).toBe(false);
   });
 
+  it('should render checkbox for each set and toggle completion on click', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const set = { id: 101, setNumber: 1, weightKg: 80, reps: 10, isCompleted: false };
+    const workout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [{ ...set }],
+        },
+      ],
+    };
+    component.workout.set(workout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const checkBtn = compiled.querySelector<HTMLButtonElement>('.btn-check-set');
+    expect(checkBtn).toBeTruthy();
+    expect(checkBtn?.classList.contains('checked')).toBe(false);
+    expect(checkBtn?.querySelector('.check-icon')).toBeNull();
+
+    const updatedSet = { ...set, isCompleted: true };
+    vi.spyOn(workoutService, 'saveSet').mockReturnValue(of(updatedSet));
+
+    checkBtn?.click();
+    fixture.detectChanges();
+
+    expect(component.workout()?.exercises?.[0].sets?.[0].isCompleted).toBe(true);
+    expect(checkBtn?.classList.contains('checked')).toBe(true);
+    expect(checkBtn?.querySelector('.check-icon')).toBeTruthy();
+  });
+
   it('should delete a set and renumber remaining sets', () => {
     const workoutService = TestBed.inject(WorkoutService);
     const set1 = { id: 101, setNumber: 1, weightKg: 80, reps: 10, isCompleted: true };
@@ -250,6 +284,78 @@ describe('WorkoutDetailComponent', () => {
     expect(remainingSets?.[1].id).toBe(103);
     expect(remainingSets?.[1].setNumber).toBe(2);
     expect(component.isDeletingSet()).toBeNull();
+  });
+
+  it('should open confirmation popup when clicking trash icon and cancel when clicking Cancel', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const deleteSpy = vi.spyOn(workoutService, 'deleteSet');
+    const set = { id: 101, setNumber: 1, weightKg: 80, reps: 10, isCompleted: false };
+    const workout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [{ ...set }],
+        },
+      ],
+    };
+    component.workout.set(workout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.modal-dialog')).toBeNull();
+
+    const trashBtn = compiled.querySelector<HTMLButtonElement>('.btn-delete-set');
+    trashBtn?.click();
+    fixture.detectChanges();
+
+    const modal = compiled.querySelector<HTMLElement>('.modal-dialog');
+    expect(modal).toBeTruthy();
+    expect(modal?.textContent).toContain('Delete Set');
+    expect(modal?.textContent).toContain('Are you sure you want to delete Set 1');
+    expect(modal?.textContent).toContain('80 kg × 10 reps');
+
+    const cancelBtn = modal?.querySelector<HTMLButtonElement>('.btn-modal-cancel');
+    cancelBtn?.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('.modal-dialog')).toBeNull();
+    expect(deleteSpy).not.toHaveBeenCalled();
+    expect(component.workout()?.exercises?.[0].sets?.length).toBe(1);
+  });
+
+  it('should delete set when confirmed in popup', () => {
+    const workoutService = TestBed.inject(WorkoutService);
+    const deleteSpy = vi.spyOn(workoutService, 'deleteSet').mockReturnValue(of(true));
+    const set = { id: 101, setNumber: 1, weightKg: 80, reps: 10, isCompleted: false };
+    const workout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [{ ...set }],
+        },
+      ],
+    };
+    component.workout.set(workout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const trashBtn = compiled.querySelector<HTMLButtonElement>('.btn-delete-set');
+    trashBtn?.click();
+    fixture.detectChanges();
+
+    const deleteBtn = compiled.querySelector<HTMLButtonElement>('.btn-modal-delete');
+    deleteBtn?.click();
+    fixture.detectChanges();
+
+    expect(deleteSpy).toHaveBeenCalledWith(101);
+    expect(compiled.querySelector('.modal-dialog')).toBeNull();
+    expect(component.workout()?.exercises?.[0].sets?.length).toBe(0);
   });
 
   it('should render Previous column with format xkg x reps', () => {
@@ -589,6 +695,184 @@ describe('WorkoutDetailComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const completeBtns = compiled.querySelectorAll<HTMLButtonElement>('.btn-complete-training');
     expect(completeBtns.length).toBe(0);
+  });
+
+  describe('Completed workout read-only mode and Edit Training toggle', () => {
+    const completedWorkoutWithData: Workout = {
+      id: 50,
+      title: 'Completed Leg Day',
+      status: 'COMPLETED',
+      durationSeconds: 3600,
+      exercises: [
+        {
+          id: 101,
+          orderIndex: 1,
+          exercise: { id: 1, name: 'Squat', isSystem: true },
+          notes: 'Great depth today',
+          sets: [
+            { id: 201, setNumber: 1, weightKg: 100, reps: 5, isCompleted: true },
+          ],
+        },
+      ],
+    };
+
+    it('should set isReadOnly to true by default for COMPLETED workout and hide edit controls', () => {
+      component.workout.set({ ...completedWorkoutWithData });
+      fixture.detectChanges();
+
+      expect(component.isReadOnly()).toBe(true);
+
+      const compiled = fixture.nativeElement as HTMLElement;
+
+      // Title should not be clickable and no edit pencil
+      expect(compiled.querySelector('.clickable-title')).toBeNull();
+      expect(compiled.querySelector('.btn-edit-title')).toBeNull();
+
+      // + Add Exercise button should be hidden
+      expect(compiled.querySelector('.section-header .btn-add')).toBeNull();
+
+      // Notes should have readonly class and no edit pencil
+      expect(compiled.querySelector('.exercise-notes-display.readonly')).toBeTruthy();
+      expect(compiled.querySelector('.btn-edit-notes')).toBeNull();
+
+      // Sets table: weight and reps not editable
+      expect(compiled.querySelector('.col-editable')).toBeNull();
+      expect(compiled.querySelector('.edit-icon')).toBeNull();
+
+      // Checkbox should be disabled
+      const checkBtn = compiled.querySelector<HTMLButtonElement>('.btn-check-set');
+      expect(checkBtn?.disabled).toBe(true);
+
+      // Delete column should be hidden
+      expect(compiled.querySelector('.col-actions')).toBeNull();
+      expect(compiled.querySelector('.col-delete')).toBeNull();
+      expect(compiled.querySelector('.btn-delete-set')).toBeNull();
+
+      // + Add set button should be hidden
+      expect(compiled.querySelector('.btn-add-set')).toBeNull();
+
+      // Bottom actions footer should have Edit Training button
+      const editBtn = compiled.querySelector<HTMLButtonElement>('.btn-edit-training');
+      expect(editBtn).toBeTruthy();
+      expect(editBtn?.textContent).toContain('Edit Training');
+    });
+
+    it('should guard mutator methods when isReadOnly is true', () => {
+      const workoutService = TestBed.inject(WorkoutService);
+      const saveSetSpy = vi.spyOn(workoutService, 'saveSet');
+      const addSetSpy = vi.spyOn(workoutService, 'addSet');
+      const deleteSetSpy = vi.spyOn(workoutService, 'deleteSet');
+
+      component.workout.set({ ...completedWorkoutWithData });
+      fixture.detectChanges();
+
+      const exercise = completedWorkoutWithData.exercises![0];
+      const set = exercise.sets![0];
+
+      // Title editing should be blocked
+      component.startEditTitle();
+      expect(component.isEditingTitle()).toBe(false);
+
+      // Notes editing should be blocked
+      component.startEditNotes(exercise);
+      expect(component.editingNotesExerciseId()).toBeNull();
+
+      // Cell editing should be blocked
+      component.startEdit(set, 'weight');
+      expect(component.editingCell()).toBeNull();
+
+      // Saving set should be blocked
+      component.completeSet(set);
+      expect(saveSetSpy).not.toHaveBeenCalled();
+
+      // Add set should be blocked
+      component.addSet(1);
+      expect(addSetSpy).not.toHaveBeenCalled();
+
+      // Delete set should be blocked
+      component.promptDeleteSet(set);
+      expect(component.setToDelete()).toBeNull();
+      component.deleteSet(set);
+      expect(deleteSetSpy).not.toHaveBeenCalled();
+    });
+
+    it('should unlock all fields when Edit Training is clicked and lock them when Done Editing is clicked', () => {
+      component.workout.set({ ...completedWorkoutWithData });
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      let editBtn = compiled.querySelector<HTMLButtonElement>('.btn-edit-training');
+      expect(editBtn).toBeTruthy();
+
+      // Click Edit Training
+      editBtn?.click();
+      fixture.detectChanges();
+
+      expect(component.isEditingCompleted()).toBe(true);
+      expect(component.isReadOnly()).toBe(false);
+
+      // Now all edit controls should be visible
+      expect(compiled.querySelector('.clickable-title')).toBeTruthy();
+      expect(compiled.querySelector('.btn-edit-title')).toBeTruthy();
+      expect(compiled.querySelector('.section-header .btn-add')).toBeTruthy();
+      expect(compiled.querySelector('.btn-edit-notes')).toBeTruthy();
+      expect(compiled.querySelectorAll('.col-editable').length).toBeGreaterThan(0);
+      expect(compiled.querySelector<HTMLButtonElement>('.btn-check-set')?.disabled).toBe(false);
+      expect(compiled.querySelector('.col-delete')).toBeTruthy();
+      expect(compiled.querySelector('.btn-add-set')).toBeTruthy();
+
+      // The button should now be Done Editing
+      const doneBtn = compiled.querySelector<HTMLButtonElement>('.btn-done-editing');
+      expect(doneBtn).toBeTruthy();
+      expect(doneBtn?.textContent).toContain('Done Editing');
+
+      // Click Done Editing
+      doneBtn?.click();
+      fixture.detectChanges();
+
+      expect(component.isEditingCompleted()).toBe(false);
+      expect(component.isReadOnly()).toBe(true);
+
+      // Controls should be hidden again
+      expect(compiled.querySelector('.clickable-title')).toBeNull();
+      expect(compiled.querySelector('.btn-edit-title')).toBeNull();
+      expect(compiled.querySelector('.section-header .btn-add')).toBeNull();
+      expect(compiled.querySelector('.btn-edit-notes')).toBeNull();
+      expect(compiled.querySelector('.col-editable')).toBeNull();
+      expect(compiled.querySelector('.col-delete')).toBeNull();
+      expect(compiled.querySelector('.btn-add-set')).toBeNull();
+
+      // And button should revert to Edit Training
+      editBtn = compiled.querySelector<HTMLButtonElement>('.btn-edit-training');
+      expect(editBtn).toBeTruthy();
+    });
+
+    it('should lock into read-only mode after completing training', () => {
+      const workoutService = TestBed.inject(WorkoutService);
+      const inProgressWorkout: Workout = {
+        id: 55,
+        title: 'Workout #55',
+        status: 'IN_PROGRESS',
+        exercises: completedWorkoutWithData.exercises,
+      };
+      component.workout.set(inProgressWorkout);
+      fixture.detectChanges();
+
+      expect(component.isReadOnly()).toBe(false);
+
+      const completedWorkout: Workout = {
+        ...inProgressWorkout,
+        status: 'COMPLETED',
+      };
+      vi.spyOn(workoutService, 'completeWorkout').mockReturnValue(of(completedWorkout));
+
+      component.completeTraining();
+      fixture.detectChanges();
+
+      expect(component.workout()?.status).toBe('COMPLETED');
+      expect(component.isReadOnly()).toBe(true);
+      expect(component.isEditingCompleted()).toBe(false);
+    });
   });
 });
 
