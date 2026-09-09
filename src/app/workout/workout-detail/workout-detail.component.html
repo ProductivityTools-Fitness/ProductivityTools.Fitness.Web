@@ -62,24 +62,13 @@
               >
                 ✏️
               </button>
-              <span class="status-badge" [class]="workout()!.status?.toLowerCase()">
-                {{ workout()!.status }}
-              </span>
-              <span class="stat-badge duration" title="Workout duration">
-                ⏱️ {{ getFormattedDuration() }}
-              </span>
-              <span class="stat-badge volume" title="Volume">
-                🏋️ {{ getTotalVolume() }} kg
-              </span>
-              <span class="stat-badge sets" title="Completed sets">
-                ✓ {{ getCompletedSetsCount() }} / {{ getTotalSetsCount() }} sets
-              </span>
             </div>
           }
         </div>
 
         <div class="workout-meta">
           <p><strong>Workout ID:</strong> #{{ workout()!.id }}</p>
+          <p><strong>Status: </strong><span class="status-badge" [class]="workout()!.status?.toLowerCase()">{{ workout()!.status }}</span></p>
           <p><strong>Date:</strong> {{ workout()!.startTime | date:'medium' }}</p>
           <p><strong>Duration:</strong> {{ getFormattedDuration() }}</p>
           <p><strong>Volume:</strong> {{ getTotalVolume() }} kg</p>

@@ -193,6 +193,9 @@
   color: #475569;
   font-size: 0.82rem;
   line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .workout-meta strong {

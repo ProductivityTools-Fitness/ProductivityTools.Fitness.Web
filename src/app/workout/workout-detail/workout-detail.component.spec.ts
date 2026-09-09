@@ -343,10 +343,11 @@ describe('WorkoutDetailComponent', () => {
     expect(component.formatSeconds(3665)).toBe('1h 1m 5s');
   });
 
-  it('should render duration in the upper part of workout details', () => {
+  it('should render duration and status in workout-meta', () => {
     const workoutWithDuration: Workout = {
       id: 20,
       title: 'Trening #20',
+      status: 'IN_PROGRESS',
       durationSeconds: 4500,
       exercises: [],
     };
@@ -354,11 +355,11 @@ describe('WorkoutDetailComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const durationBadge = compiled.querySelector<HTMLElement>('.stat-badge.duration');
-    expect(durationBadge?.textContent).toContain('1h 15m');
+    expect(compiled.querySelector('.stat-badge.duration')).toBeNull();
 
     const metaText = compiled.querySelector<HTMLElement>('.workout-meta');
     expect(metaText?.textContent).toContain('Duration: 1h 15m');
+    expect(metaText?.textContent).toContain('Status: IN_PROGRESS');
   });
 
   it('should calculate live duration from startTime for in-progress workout and advance on tick', () => {
@@ -387,8 +388,8 @@ describe('WorkoutDetailComponent', () => {
     expect(component.getFormattedDuration()).toBe('1m 45s');
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const durationBadge = compiled.querySelector<HTMLElement>('.stat-badge.duration');
-    expect(durationBadge?.textContent).toContain('1m 45s');
+    const metaText = compiled.querySelector<HTMLElement>('.workout-meta');
+    expect(metaText?.textContent).toContain('Duration: 1m 45s');
   });
 
   it('should clean up duration timer on destroy', () => {
@@ -397,7 +398,7 @@ describe('WorkoutDetailComponent', () => {
     expect(stopTimerSpy).toHaveBeenCalled();
   });
 
-  it('should calculate Volume and Sets for completed sets and render in the upper section', () => {
+  it('should calculate Volume and Sets for completed sets and render in workout-meta', () => {
     const workout: Workout = {
       id: 21,
       title: 'Trening #21',
@@ -432,11 +433,8 @@ describe('WorkoutDetailComponent', () => {
     expect(component.getTotalSetsCount()).toBe(5);
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const volumeBadge = compiled.querySelector<HTMLElement>('.stat-badge.volume');
-    expect(volumeBadge?.textContent).toContain('2400 kg');
-
-    const setsBadge = compiled.querySelector<HTMLElement>('.stat-badge.sets');
-    expect(setsBadge?.textContent).toContain('3 / 5 sets');
+    expect(compiled.querySelector('.stat-badge.volume')).toBeNull();
+    expect(compiled.querySelector('.stat-badge.sets')).toBeNull();
 
     const metaText = compiled.querySelector<HTMLElement>('.workout-meta');
     expect(metaText?.textContent).toContain('Volume: 2400 kg');
