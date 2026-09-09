@@ -18,10 +18,15 @@
         </thead>
         <tbody>
           @for (workout of workoutList(); track workout.id) {
-            <tr>
+            <tr class="workout-row" (click)="openWorkout(workout.id)">
               <td class="col-id">#{{ workout.id }}</td>
               <td class="col-title">
-                <a [routerLink]="['/workouts/detail']" [queryParams]="{ workoutId: workout.id }" class="workout-title-link">
+                <a
+                  [routerLink]="['/workouts/detail']"
+                  [queryParams]="{ workoutId: workout.id }"
+                  class="workout-title-link"
+                  (click)="$event.stopPropagation()"
+                >
                   {{ getWorkoutTitle(workout) }}
                 </a>
               </td>
@@ -32,7 +37,12 @@
                 </span>
               </td>
               <td class="col-actions">
-                <a [routerLink]="['/workouts/detail']" [queryParams]="{ workoutId: workout.id }" class="btn-open">
+                <a
+                  [routerLink]="['/workouts/detail']"
+                  [queryParams]="{ workoutId: workout.id }"
+                  class="btn-open"
+                  (click)="$event.stopPropagation()"
+                >
                   Open →
                 </a>
               </td>

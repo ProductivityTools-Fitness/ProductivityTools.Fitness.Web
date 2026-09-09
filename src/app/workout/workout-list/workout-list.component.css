@@ -89,8 +89,22 @@
   vertical-align: middle;
 }
 
-.workout-table tr:hover td {
+.workout-row {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.workout-row:hover td {
   background-color: #f8fafc;
+}
+
+.workout-row:hover .workout-title-link {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.workout-row:active td {
+  background-color: #f1f5f9;
 }
 
 .workout-table tr:last-child td {
@@ -144,13 +158,14 @@
   color: #15803d;
 }
 
+.col-actions-head,
 .col-actions {
+  display: none;
   text-align: right;
-  white-space: nowrap;
 }
 
-.col-actions-head {
-  text-align: right;
+.col-actions {
+  white-space: nowrap;
 }
 
 .btn-open {
@@ -169,6 +184,13 @@
 .btn-open:hover {
   background-color: #2563eb;
   color: #ffffff;
+}
+
+@media (min-width: 640px) {
+  .col-actions-head,
+  .col-actions {
+    display: table-cell;
+  }
 }
 
 .empty-state {

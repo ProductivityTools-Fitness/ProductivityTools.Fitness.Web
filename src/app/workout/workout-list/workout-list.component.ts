@@ -39,6 +39,13 @@ export class WorkoutListComponent implements OnInit {
     });
   }
 
+  openWorkout(workoutId?: number): void {
+    if (!workoutId) return;
+    this.router.navigate(['/workouts/detail'], {
+      queryParams: { workoutId },
+    });
+  }
+
   getWorkoutTitle(workout: Workout): string {
     if (
       workout.title &&
