@@ -1,18 +1,4 @@
 <div class="workout-detail-container">
-  <div class="header-nav">
-    <a [routerLink]="['/workouts']" class="back-link">← Back to workouts</a>
-    @if (workout() && workout()!.status !== 'COMPLETED') {
-      <button
-        type="button"
-        class="btn btn-complete-training"
-        (click)="completeTraining()"
-        [disabled]="isCompletingTraining()"
-      >
-        {{ isCompletingTraining() ? 'Completing...' : 'Complete Training' }}
-      </button>
-    }
-  </div>
-
   @if (isLoading()) {
     <p class="loading-message">Loading workout details... Please wait.</p>
   } @else if (errorMessage()) {
