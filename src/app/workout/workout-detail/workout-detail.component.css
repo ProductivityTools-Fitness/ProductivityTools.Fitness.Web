@@ -11,21 +11,52 @@
 
 .workout-header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 0.75rem;
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 1rem;
   margin-bottom: 1rem;
 }
 
+.workout-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background-color: #f8fafc;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.workout-meta p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.workout-meta strong {
+  color: #1e293b;
+}
+
 .title-group {
-  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  min-width: 0;
 }
 
 .title-display {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.35rem;
   flex-wrap: wrap;
 }
 
@@ -34,6 +65,8 @@
   font-size: 1.35rem;
   font-weight: 700;
   color: #0f172a;
+  text-align: right;
+  word-break: break-word;
 }
 
 @media (min-width: 640px) {
@@ -46,6 +79,9 @@
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .workout-header {
+    gap: 1.5rem;
   }
   .title-display h2 {
     font-size: 1.6rem;
@@ -63,25 +99,10 @@
   background-color: #f1f5f9;
 }
 
-.btn-edit-title {
-  background: transparent;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0.2rem 0.35rem;
-  border-radius: 4px;
-  opacity: 0.6;
-  transition: opacity 0.15s, background-color 0.15s;
-}
-
-.btn-edit-title:hover {
-  opacity: 1;
-  background-color: #f1f5f9;
-}
-
 .inline-title-edit {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.5rem;
   flex-wrap: wrap;
   width: 100%;
@@ -94,8 +115,10 @@
   border: 2px solid #2563eb;
   border-radius: 6px;
   outline: none;
-  flex: 1;
-  min-width: 160px;
+  width: 100%;
+  max-width: 320px;
+  box-sizing: border-box;
+  text-align: right;
 }
 
 .status-badge {
@@ -114,29 +137,6 @@
 .status-badge.completed {
   background-color: #dcfce7;
   color: #15803d;
-}
-
-.workout-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 1.25rem;
-  background-color: #f8fafc;
-  padding: 0.6rem 0.85rem;
-  border-radius: 8px;
-}
-
-.workout-meta p {
-  margin: 0;
-  color: #475569;
-  font-size: 0.82rem;
-  line-height: 1.4;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.workout-meta strong {
-  color: #1e293b;
 }
 
 .workout-notes {

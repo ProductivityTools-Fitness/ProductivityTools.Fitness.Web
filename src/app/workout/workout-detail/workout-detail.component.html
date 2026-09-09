@@ -11,6 +11,15 @@
   } @else if (workout()) {
     <div class="workout-card">
       <div class="workout-header">
+        <div class="workout-meta">
+          <p><strong>Workout ID:</strong> #{{ workout()!.id }}</p>
+          <p><strong>Status: </strong><span class="status-badge" [class]="workout()!.status?.toLowerCase()">{{ workout()!.status }}</span></p>
+          <p><strong>Date:</strong> {{ workout()!.startTime | date:'medium' }}</p>
+          <p><strong>Duration:</strong> {{ getFormattedDuration() }}</p>
+          <p><strong>Volume:</strong> {{ getTotalVolume() }} kg</p>
+          <p><strong>Sets:</strong> {{ getCompletedSetsCount() }} / {{ getTotalSetsCount() }}</p>
+        </div>
+
         <div class="title-group">
           @if (isEditingTitle()) {
             <div class="inline-title-edit">
@@ -42,27 +51,11 @@
             <div class="title-display">
               @if (!isReadOnly()) {
                 <h2 (click)="startEditTitle()" class="clickable-title" title="Click to edit workout title">{{ getWorkoutTitle(workout()) }}</h2>
-                <button
-                  class="btn-edit-title"
-                  (click)="startEditTitle()"
-                  title="Edit workout title"
-                >
-                  ✏️
-                </button>
               } @else {
                 <h2>{{ getWorkoutTitle(workout()) }}</h2>
               }
             </div>
           }
-        </div>
-
-        <div class="workout-meta">
-          <p><strong>Workout ID:</strong> #{{ workout()!.id }}</p>
-          <p><strong>Status: </strong><span class="status-badge" [class]="workout()!.status?.toLowerCase()">{{ workout()!.status }}</span></p>
-          <p><strong>Date:</strong> {{ workout()!.startTime | date:'medium' }}</p>
-          <p><strong>Duration:</strong> {{ getFormattedDuration() }}</p>
-          <p><strong>Volume:</strong> {{ getTotalVolume() }} kg</p>
-          <p><strong>Sets:</strong> {{ getCompletedSetsCount() }} / {{ getTotalSetsCount() }}</p>
         </div>
       </div>
 

@@ -724,9 +724,8 @@ describe('WorkoutDetailComponent', () => {
 
       const compiled = fixture.nativeElement as HTMLElement;
 
-      // Title should not be clickable and no edit pencil
+      // Title should not be clickable
       expect(compiled.querySelector('.clickable-title')).toBeNull();
-      expect(compiled.querySelector('.btn-edit-title')).toBeNull();
 
       // + Add Exercise button should be hidden
       expect(compiled.querySelector('.section-header .btn-add')).toBeNull();
@@ -813,7 +812,6 @@ describe('WorkoutDetailComponent', () => {
 
       // Now all edit controls should be visible
       expect(compiled.querySelector('.clickable-title')).toBeTruthy();
-      expect(compiled.querySelector('.btn-edit-title')).toBeTruthy();
       expect(compiled.querySelector('.section-header .btn-add')).toBeTruthy();
       expect(compiled.querySelector('.btn-edit-notes')).toBeTruthy();
       expect(compiled.querySelectorAll('.col-editable').length).toBeGreaterThan(0);
@@ -835,7 +833,6 @@ describe('WorkoutDetailComponent', () => {
 
       // Controls should be hidden again
       expect(compiled.querySelector('.clickable-title')).toBeNull();
-      expect(compiled.querySelector('.btn-edit-title')).toBeNull();
       expect(compiled.querySelector('.section-header .btn-add')).toBeNull();
       expect(compiled.querySelector('.btn-edit-notes')).toBeNull();
       expect(compiled.querySelector('.col-editable')).toBeNull();
