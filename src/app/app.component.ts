@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, effect } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from './auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -7,7 +8,22 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
-export class AppComponent {}
+export class AppComponent {
+  readonly authService = inject(AuthService);
+  avatarLoadError = signal<boolean>(false);
+
+  constructor() {
+    effect(() => {
+      this.authService.currentUser();
+      this.avatarLoadError.set(false);
+    });
+  }
+
+  logout(): void {
+    this.authService.logout();
+  }
+}
+
 
 
 

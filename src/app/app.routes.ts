@@ -42,7 +42,11 @@ export const routes: Routes = [
         (m) => m.ExerciseDbComponent,
       ),
   },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./auth/login/login.component').then((m) => m.LoginComponent),
+  },
   { path: '', redirectTo: '/workouts', pathMatch: 'full' },
-
 ];
 

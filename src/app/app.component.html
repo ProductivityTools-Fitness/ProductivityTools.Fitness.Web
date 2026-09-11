@@ -6,6 +6,31 @@
     <a routerLink="/exercises" routerLinkActive="active">Ćwiczenia</a>
     <a routerLink="/exercisedb" routerLinkActive="active">ExerciseDB</a>
   </nav>
+  <div class="header-auth">
+    @if (authService.isLoading()) {
+      <span class="auth-loading">...</span>
+    } @else if (authService.isLoggedIn()) {
+      <div class="user-profile">
+        @if (authService.photoURL() && !avatarLoadError()) {
+          <img
+            [src]="authService.photoURL()"
+            alt="Avatar"
+            class="user-avatar"
+            referrerpolicy="no-referrer"
+            (error)="avatarLoadError.set(true)"
+          />
+        } @else {
+          <div class="avatar-fallback">
+            {{ (authService.displayName() || 'U').charAt(0).toUpperCase() }}
+          </div>
+        }
+        <span class="user-name" [title]="authService.userEmail() || ''">{{ authService.displayName() }}</span>
+        <button type="button" class="btn-logout" (click)="logout()">Wyloguj</button>
+      </div>
+    } @else {
+      <a routerLink="/login" class="btn-login" routerLinkActive="active">Zaloguj</a>
+    }
+  </div>
 </header>
 <main>
   <router-outlet></router-outlet>

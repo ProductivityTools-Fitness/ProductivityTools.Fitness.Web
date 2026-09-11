@@ -1,0 +1,59 @@
+import { Injectable, signal, computed } from '@angular/core';
+import {
+  User,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  Auth,
+} from 'firebase/auth';
+import { auth } from '../firebase.config';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthService {
+  private readonly auth: Auth = auth;
+
+  readonly currentUser = signal<User | null>(null);
+  readonly isLoading = signal<boolean>(true);
+
+  readonly isLoggedIn = computed(() => !!this.currentUser());
+  readonly userEmail = computed(() => this.currentUser()?.email ?? null);
+  readonly displayName = computed(() => {
+    const user = this.currentUser();
+    if (!user) return '';
+    return user.displayName || user.email || 'Użytkownik';
+  });
+  readonly photoURL = computed(() => this.currentUser()?.photoURL ?? null);
+
+  constructor() {
+    this.initAuthStateListener();
+  }
+
+  protected initAuthStateListener(): void {
+    onAuthStateChanged(this.auth, (user) => {
+      this.currentUser.set(user);
+      this.isLoading.set(false);
+    });
+  }
+
+  async loginWithGoogle(): Promise<User> {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const result = await signInWithPopup(this.auth, provider);
+    this.currentUser.set(result.user);
+    return result.user;
+  }
+
+  async logout(): Promise<void> {
+    await signOut(this.auth);
+    this.currentUser.set(null);
+  }
+
+  async getIdToken(forceRefresh = false): Promise<string | null> {
+    const user = this.currentUser();
+    if (!user) return null;
+    return user.getIdToken(forceRefresh);
+  }
+}
