@@ -12,7 +12,7 @@
     <div class="workout-card">
       <div class="workout-header">
         <div class="workout-meta">
-          <p><strong>Workout ID:</strong> #{{ workout()!.id }}</p>
+          <p><strong>Workout Number:</strong> #{{ workout()!.workoutNumber ?? workout()!.id }}</p>
           <p><strong>Status: </strong><span class="status-badge" [class]="workout()!.status?.toLowerCase()">{{ workout()!.status }}</span></p>
           <p><strong>Date:</strong> {{ workout()!.startTime | date:'medium' }}</p>
           <p><strong>Duration:</strong> {{ getFormattedDuration() }}</p>
@@ -306,7 +306,7 @@
               type="button"
               class="btn btn-action-lg btn-complete-training"
               (click)="completeTraining()"
-              [disabled]="isCompletingTraining()"
+              [disabled]="isCompletingTraining() || isDeletingWorkout()"
             >
               {{ isCompletingTraining() ? 'Completing...' : '✓ Complete Training' }}
             </button>
@@ -315,6 +315,7 @@
               type="button"
               class="btn btn-action-lg btn-done-editing"
               (click)="toggleEditCompleted()"
+              [disabled]="isDeletingWorkout()"
             >
               ✓ Done Editing
             </button>
@@ -323,10 +324,20 @@
               type="button"
               class="btn btn-action-lg btn-edit-training"
               (click)="toggleEditCompleted()"
+              [disabled]="isDeletingWorkout()"
             >
               ✏️ Edit Training
             </button>
           }
+
+          <button
+            type="button"
+            class="btn btn-action-lg btn-delete-training"
+            (click)="promptDeleteWorkout()"
+            [disabled]="isDeletingWorkout() || isCompletingTraining()"
+          >
+            {{ isDeletingWorkout() ? 'Deleting...' : '🗑️ Delete Training' }}
+          </button>
         </div>
       </div>
     </div>
@@ -334,6 +345,45 @@
     <div class="no-workout">
       <p>No workout selected.</p>
       <a [routerLink]="['/workouts']">Go to workout list</a>
+    </div>
+  }
+
+  @if (showDeleteWorkoutModal()) {
+    <div class="modal-backdrop" (click)="cancelDeleteWorkout()">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h4>Delete Workout</h4>
+          <button
+            type="button"
+            class="btn-modal-close"
+            (click)="cancelDeleteWorkout()"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete <strong>{{ getWorkoutTitle(workout()) }}</strong>?</p>
+          <p class="modal-delete-warning">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-modal-cancel"
+            (click)="cancelDeleteWorkout()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-modal-delete"
+            (click)="confirmDeleteWorkout()"
+            [disabled]="isDeletingWorkout()"
+          >
+            {{ isDeletingWorkout() ? 'Deleting...' : 'Delete' }}
+          </button>
+        </div>
+      </div>
     </div>
   }
 

@@ -20,6 +20,10 @@ export interface DeleteSetRequest {
   id: number;
 }
 
+export interface DeleteWorkoutRequest {
+  id: number;
+}
+
 export interface SaveExerciseNotesRequest {
   workoutExerciseId?: number;
   id?: number;
@@ -91,6 +95,11 @@ export class WorkoutService {
     return this.http.post<Workout>(`${environment.apiUrl}/workout/completeWorkout`, {
       workoutId,
     });
+  }
+
+  deleteWorkout(workoutId: number): Observable<boolean> {
+    const request: DeleteWorkoutRequest = { id: workoutId };
+    return this.http.post<boolean>(`${environment.apiUrl}/workout/delete`, request);
   }
 }
 

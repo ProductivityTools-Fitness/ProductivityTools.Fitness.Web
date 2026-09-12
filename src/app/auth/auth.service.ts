@@ -52,7 +52,14 @@ export class AuthService {
   }
 
   async getIdToken(forceRefresh = false): Promise<string | null> {
-    const user = this.currentUser();
+    if (this.isLoading()) {
+      try {
+        await this.auth.authStateReady?.();
+      } catch {
+        // ignore if not supported
+      }
+    }
+    const user = this.currentUser() || this.auth.currentUser;
     if (!user) return null;
     return user.getIdToken(forceRefresh);
   }

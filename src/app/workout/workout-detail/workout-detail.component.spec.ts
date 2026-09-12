@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { WorkoutDetailComponent } from './workout-detail.component';
 import { WorkoutService } from '../workout.service';
@@ -869,6 +869,165 @@ describe('WorkoutDetailComponent', () => {
       expect(component.workout()?.status).toBe('COMPLETED');
       expect(component.isReadOnly()).toBe(true);
       expect(component.isEditingCompleted()).toBe(false);
+    });
+  });
+
+  it('should render Workout Number in workout-meta when workoutNumber is provided', () => {
+    const workoutWithNumber: Workout = {
+      id: 101,
+      workoutNumber: 15,
+      title: 'Trening #15',
+      status: 'IN_PROGRESS',
+      exercises: [],
+    };
+    component.workout.set(workoutWithNumber);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const metaText = compiled.querySelector<HTMLElement>('.workout-meta');
+    expect(metaText?.textContent).toContain('Workout Number: #15');
+    expect(metaText?.textContent).not.toContain('Workout ID:');
+  });
+
+  it('should fallback to id for Workout Number when workoutNumber is undefined', () => {
+    const workoutWithoutNumber: Workout = {
+      id: 88,
+      title: 'Trening #88',
+      status: 'IN_PROGRESS',
+      exercises: [],
+    };
+    component.workout.set(workoutWithoutNumber);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const metaText = compiled.querySelector<HTMLElement>('.workout-meta');
+    expect(metaText?.textContent).toContain('Workout Number: #88');
+  });
+
+  describe('Delete Workout', () => {
+    it('should render Delete Training button next to Edit Training in workout-actions-footer', () => {
+      const completedWorkout: Workout = {
+        id: 77,
+        workoutNumber: 7,
+        title: 'Push Day',
+        status: 'COMPLETED',
+        exercises: [],
+      };
+      component.workout.set(completedWorkout);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const footer = compiled.querySelector('.workout-actions-footer');
+      expect(footer).toBeTruthy();
+
+      const editBtn = footer?.querySelector<HTMLButtonElement>('.btn-edit-training');
+      const deleteBtn = footer?.querySelector<HTMLButtonElement>('.btn-delete-training');
+
+      expect(editBtn).toBeTruthy();
+      expect(deleteBtn).toBeTruthy();
+      expect(deleteBtn?.textContent).toContain('Delete Training');
+    });
+
+    it('should render Delete Training button next to Complete Training for in-progress workout', () => {
+      const activeWorkout: Workout = {
+        id: 78,
+        title: 'Pull Day',
+        status: 'IN_PROGRESS',
+        exercises: [],
+      };
+      component.workout.set(activeWorkout);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const footer = compiled.querySelector('.workout-actions-footer');
+      expect(footer).toBeTruthy();
+
+      const completeBtn = footer?.querySelector<HTMLButtonElement>('.btn-complete-training');
+      const deleteBtn = footer?.querySelector<HTMLButtonElement>('.btn-delete-training');
+
+      expect(completeBtn).toBeTruthy();
+      expect(deleteBtn).toBeTruthy();
+    });
+
+    it('should open delete confirmation modal when clicking Delete Training button and close on Cancel', () => {
+      const workoutService = TestBed.inject(WorkoutService);
+      const deleteSpy = vi.spyOn(workoutService, 'deleteWorkout');
+      const workout: Workout = {
+        id: 99,
+        workoutNumber: 9,
+        title: 'Leg Day',
+        status: 'COMPLETED',
+        exercises: [],
+      };
+      component.workout.set(workout);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.modal-dialog')).toBeNull();
+
+      const deleteBtn = compiled.querySelector<HTMLButtonElement>('.btn-delete-training');
+      deleteBtn?.click();
+      fixture.detectChanges();
+
+      const modal = compiled.querySelector<HTMLElement>('.modal-dialog');
+      expect(modal).toBeTruthy();
+      expect(modal?.textContent).toContain('Delete Workout');
+      expect(modal?.textContent).toContain('Are you sure you want to delete Leg Day?');
+      expect(modal?.textContent).toContain('This action cannot be undone.');
+
+      const cancelBtn = modal?.querySelector<HTMLButtonElement>('.btn-modal-cancel');
+      cancelBtn?.click();
+      fixture.detectChanges();
+
+      expect(compiled.querySelector('.modal-dialog')).toBeNull();
+      expect(deleteSpy).not.toHaveBeenCalled();
+    });
+
+    it('should call workoutService.deleteWorkout and navigate to /workouts when confirming delete', () => {
+      const workoutService = TestBed.inject(WorkoutService);
+      const router = TestBed.inject(Router);
+      const deleteSpy = vi.spyOn(workoutService, 'deleteWorkout').mockReturnValue(of(true));
+      const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      const workout: Workout = {
+        id: 105,
+        title: 'Full Body',
+        status: 'COMPLETED',
+        exercises: [],
+      };
+      component.workout.set(workout);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const deleteBtn = compiled.querySelector<HTMLButtonElement>('.btn-delete-training');
+      deleteBtn?.click();
+      fixture.detectChanges();
+
+      const modal = compiled.querySelector<HTMLElement>('.modal-dialog');
+      const confirmBtn = modal?.querySelector<HTMLButtonElement>('.btn-modal-delete');
+      confirmBtn?.click();
+      fixture.detectChanges();
+
+      expect(deleteSpy).toHaveBeenCalledWith(105);
+      expect(navigateSpy).toHaveBeenCalledWith(['/workouts']);
+      expect(component.isDeletingWorkout()).toBe(false);
+    });
+
+    it('should set errorMessage if deleteWorkout fails', () => {
+      const workoutService = TestBed.inject(WorkoutService);
+      vi.spyOn(workoutService, 'deleteWorkout').mockReturnValue(throwError(() => new Error('Delete failed')));
+
+      const workout: Workout = {
+        id: 106,
+        title: 'Full Body',
+        status: 'COMPLETED',
+        exercises: [],
+      };
+      component.workout.set(workout);
+      component.confirmDeleteWorkout();
+
+      expect(component.isDeletingWorkout()).toBe(false);
+      expect(component.errorMessage()).toBe('Failed to delete workout. Please try again.');
     });
   });
 });

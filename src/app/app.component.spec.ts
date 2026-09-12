@@ -78,5 +78,23 @@ describe('AppComponent', () => {
     logoutBtn?.click();
     expect(mockAuthService.logout).toHaveBeenCalled();
   });
+
+  it('should render notification component', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-notification')).toBeTruthy();
+  });
+
+  it('should render navigation links including Hevy import', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const navLinks = compiled.querySelectorAll('nav a');
+    const linkTexts = Array.from(navLinks).map((a) => a.textContent?.trim());
+    expect(linkTexts).toContain('Hevy import');
+    expect(linkTexts).toContain('ExerciseDB');
+    expect(linkTexts).toContain('Treningi');
+  });
 });
 

@@ -27,6 +27,7 @@ export interface WorkoutExercise {
 
 export interface Workout {
   id?: number;
+  workoutNumber?: number;
   userId?: number;
   title: string;
   startTime?: string | Date;

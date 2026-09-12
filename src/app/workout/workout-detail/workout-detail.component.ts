@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WorkoutService, SaveSetRequest } from '../workout.service';
@@ -13,6 +13,7 @@ import { Workout, WorkoutExercise, WorkoutSet } from '../models/workout';
 })
 export class WorkoutDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly workoutService = inject(WorkoutService);
 
   workoutId = signal<number | null>(null);
@@ -41,6 +42,8 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
   exerciseNotesInput = '';
   savingNotesExerciseId = signal<number | null>(null);
   isCompletingTraining = signal<boolean>(false);
+  showDeleteWorkoutModal = signal<boolean>(false);
+  isDeletingWorkout = signal<boolean>(false);
 
   ngOnInit(): void {
     this.startDurationTimer();
@@ -84,7 +87,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
     ) {
       return workout.title;
     }
-    return `Trening #${workout.id}`;
+    return `Trening #${workout.workoutNumber ?? workout.id}`;
   }
 
   formatPrevious(set: WorkoutSet): string {
@@ -207,6 +210,7 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
       this.cancelEditTitle();
       this.cancelEditNotes();
       this.cancelDeleteSet();
+      this.cancelDeleteWorkout();
     }
   }
 
@@ -561,6 +565,36 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error deleting set:', err);
         this.isDeletingSet.set(null);
+      },
+    });
+  }
+
+  promptDeleteWorkout(): void {
+    this.showDeleteWorkoutModal.set(true);
+  }
+
+  cancelDeleteWorkout(): void {
+    this.showDeleteWorkoutModal.set(false);
+  }
+
+  confirmDeleteWorkout(): void {
+    const currentWorkout = this.workout();
+    if (!currentWorkout || !currentWorkout.id || this.isDeletingWorkout()) {
+      return;
+    }
+
+    this.showDeleteWorkoutModal.set(false);
+    this.isDeletingWorkout.set(true);
+
+    this.workoutService.deleteWorkout(currentWorkout.id).subscribe({
+      next: () => {
+        this.isDeletingWorkout.set(false);
+        this.router.navigate(['/workouts']);
+      },
+      error: (err) => {
+        console.error('Error deleting workout:', err);
+        this.isDeletingWorkout.set(false);
+        this.errorMessage.set('Failed to delete workout. Please try again.');
       },
     });
   }

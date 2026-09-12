@@ -54,7 +54,7 @@ export class WorkoutListComponent implements OnInit {
     ) {
       return workout.title;
     }
-    return `Trening #${workout.id}`;
+    return `Trening #${workout.workoutNumber ?? workout.id}`;
   }
 }
 

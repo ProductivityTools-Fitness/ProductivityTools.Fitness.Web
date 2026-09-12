@@ -87,6 +87,7 @@ describe('WorkoutListComponent', () => {
 
   it('should render default title when workout has empty title or placeholder title', () => {
     expect(component.getWorkoutTitle({ id: 5, title: '' })).toBe('Trening #5');
+    expect(component.getWorkoutTitle({ id: 5, workoutNumber: 12, title: '' })).toBe('Trening #12');
     expect(component.getWorkoutTitle({ id: 6, title: 'Log Workout' })).toBe('Trening #6');
     expect(component.getWorkoutTitle({ id: 7, title: 'New workout' })).toBe('Trening #7');
     expect(component.getWorkoutTitle({ id: 8, title: 'Leg Day' })).toBe('Leg Day');
