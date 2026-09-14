@@ -1,10 +1,26 @@
 <div class="workout-list-container">
   <div class="list-header">
-    <h2>Workouts</h2>
-    <button class="btn btn-primary" (click)="newWorkout()">+ Add training</button>
+    <div class="title-with-spinner">
+      <h2>Workouts</h2>
+      @if (isLoading()) {
+        <span class="inline-spinner" title="Loading workouts..."></span>
+      }
+    </div>
+    <button class="btn btn-primary" (click)="newWorkout()" [disabled]="isLoading()">+ Add training</button>
   </div>
 
-  @if (workoutList().length > 0) {
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="loading-title">Loading workouts...</p>
+      <p class="loading-subtitle">Fetching your workout history in the background. Please wait.</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="error-box">
+      <p>{{ errorMessage() }}</p>
+      <button class="btn btn-retry" (click)="loadWorkouts()">Retry</button>
+    </div>
+  } @else if (workoutList().length > 0) {
     <div class="table-responsive">
       <table class="workout-table">
         <thead>

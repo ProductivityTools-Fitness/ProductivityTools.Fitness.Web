@@ -12,6 +12,8 @@ import { Workout } from '../models/workout';
 })
 export class WorkoutListComponent implements OnInit {
   workoutList = signal<Workout[]>([]);
+  isLoading = signal<boolean>(true);
+  errorMessage = signal<string | null>(null);
 
   constructor(
     private workoutService: WorkoutService,
@@ -19,11 +21,22 @@ export class WorkoutListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadWorkouts();
+  }
+
+  loadWorkouts(): void {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
     this.workoutService.getWorkoutList().subscribe({
       next: (workouts) => {
         this.workoutList.set(workouts);
+        this.isLoading.set(false);
       },
-      error: (err) => console.error('Error fetching workout list:', err),
+      error: (err) => {
+        console.error('Error fetching workout list:', err);
+        this.errorMessage.set('Failed to load workouts. Please try again.');
+        this.isLoading.set(false);
+      },
     });
   }
 

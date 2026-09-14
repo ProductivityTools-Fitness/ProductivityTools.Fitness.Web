@@ -1,6 +1,10 @@
 <div class="workout-detail-container">
   @if (isLoading()) {
-    <p class="loading-message">Loading workout details... Please wait.</p>
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="loading-title">Loading workout details...</p>
+      <p class="loading-subtitle">Fetching workout data in the background. Please wait.</p>
+    </div>
   } @else if (errorMessage()) {
     <div class="error-box">
       <p>{{ errorMessage() }}</p>

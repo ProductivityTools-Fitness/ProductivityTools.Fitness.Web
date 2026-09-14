@@ -15,7 +15,7 @@ export class ExerciseDbService {
     name?: string,
     bodyCategory?: string,
     equipmentCategory?: string,
-    limit: number = 20,
+    limit: number = 50,
   ): Observable<ExternalSearchResult[]> {
     let params = new HttpParams().set('limit', limit);
     if (name && name.trim()) {
