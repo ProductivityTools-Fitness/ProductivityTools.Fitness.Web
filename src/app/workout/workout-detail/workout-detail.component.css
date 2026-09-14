@@ -458,27 +458,12 @@
   text-align: center;
 }
 
-.sets-table tr.completed {
-  background-color: #dcfce7;
-  font-weight: 700;
-}
-
-.sets-table tr.completed td {
-  color: #14532d;
-  border-bottom-color: #bbf7d0;
-  font-weight: 700;
-}
-
 .col-set-num {
   font-weight: 700;
   color: #64748b;
   width: 2.25rem;
   min-width: 1.75rem;
   text-align: center;
-}
-
-.sets-table tr.completed .col-set-num {
-  color: #15803d;
 }
 
 .col-previous {
@@ -497,12 +482,6 @@
   font-weight: 500;
 }
 
-.sets-table tr.completed .prev-val {
-  background-color: rgba(255, 255, 255, 0.8);
-  border-color: #a7f3d0;
-  color: #14532d;
-  font-weight: 600;
-}
 
 .col-weight,
 .col-reps,
@@ -535,17 +514,8 @@
   background-color: #eff6ff;
 }
 
-.sets-table tr.completed .cell-display {
-  background-color: #ffffff;
-  border-color: #86efac;
-}
-
 .cell-display.readonly {
   cursor: default;
-}
-
-.sets-table tr.completed .col-editable:hover .cell-display {
-  border-color: #4ade80;
 }
 
 .cell-val {
@@ -554,13 +524,6 @@
   text-align: center;
 }
 
-.edit-icon {
-  position: absolute;
-  right: 0.2rem;
-  font-size: 0.65rem;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
 
 .inline-num-input {
   width: 2.75rem;
@@ -769,9 +732,7 @@
     min-width: 3rem;
     padding: 0.3rem 0.5rem;
   }
-  .col-editable:hover .edit-icon {
-    opacity: 0.7;
-  }
+
   .inline-num-input {
     width: 3.35rem;
     padding: 0.25rem 0.2rem;

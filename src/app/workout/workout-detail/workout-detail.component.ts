@@ -493,7 +493,12 @@ export class WorkoutDetailComponent implements OnInit, OnDestroy {
         ...currentWorkout,
         exercises: currentWorkout.exercises.map((ex) => ({
           ...ex,
-          sets: ex.sets?.map((s) => (s.id === updatedSet.id ? { ...s, ...updatedSet } : s)),
+          sets: ex.sets?.map((s) => (s.id === updatedSet.id ? {
+            ...s,
+            ...updatedSet,
+            prevWeightKg: updatedSet.prevWeightKg !== undefined && updatedSet.prevWeightKg !== null ? updatedSet.prevWeightKg : s.prevWeightKg,
+            prevReps: updatedSet.prevReps !== undefined && updatedSet.prevReps !== null ? updatedSet.prevReps : s.prevReps,
+          } : s)),
         })),
       };
     });

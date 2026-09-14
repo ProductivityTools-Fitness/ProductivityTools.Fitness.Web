@@ -219,9 +219,6 @@
                               } @else {
                                 <div class="cell-display" [class.readonly]="isReadOnly()" [title]="isReadOnly() ? '' : 'Kliknij, aby edytować ciężar'">
                                   <span class="cell-val">{{ set.weightKg }}</span>
-                                  @if (!isReadOnly()) {
-                                    <span class="edit-icon">✏️</span>
-                                  }
                                 </div>
                               }
                             </td>
@@ -245,9 +242,6 @@
                               } @else {
                                 <div class="cell-display" [class.readonly]="isReadOnly()" [title]="isReadOnly() ? '' : 'Kliknij, aby edytować powtórzenia'">
                                   <span class="cell-val">{{ set.reps }}</span>
-                                  @if (!isReadOnly()) {
-                                    <span class="edit-icon">✏️</span>
-                                  }
                                 </div>
                               }
                             </td>

@@ -358,6 +358,37 @@ describe('WorkoutDetailComponent', () => {
     expect(component.workout()?.exercises?.[0].sets?.length).toBe(0);
   });
 
+  it('should not render pencil icons in editable weight and reps cells', () => {
+    const set1 = {
+      id: 101,
+      setNumber: 1,
+      weightKg: 80,
+      reps: 10,
+      isCompleted: false,
+    };
+    const initialWorkout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [set1],
+        },
+      ],
+    };
+    component.workout.set(initialWorkout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelectorAll('.col-editable').length).toBe(2);
+    expect(compiled.querySelector('.edit-icon')).toBeNull();
+    const cellDisplays = compiled.querySelectorAll('.cell-display');
+    cellDisplays.forEach((el) => {
+      expect(el.textContent).not.toContain('✏️');
+    });
+  });
+
   it('should render Previous column with format xkg x reps', () => {
     const set1 = {
       id: 101,
