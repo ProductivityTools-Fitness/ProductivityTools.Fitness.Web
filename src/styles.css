@@ -16,6 +16,12 @@ body {
   color: red;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Reusable Modal Dialog Styles */
 .modal-backdrop {
   position: fixed;

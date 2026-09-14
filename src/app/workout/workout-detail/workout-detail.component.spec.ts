@@ -1030,6 +1030,106 @@ describe('WorkoutDetailComponent', () => {
       expect(component.errorMessage()).toBe('Failed to delete workout. Please try again.');
     });
   });
+
+  describe('Exercise icons in workout detail', () => {
+    it('should render exercise image icon when gifUrl or iconUrl is present', () => {
+      const workoutWithImages: Workout = {
+        id: 200,
+        title: 'Workout with Images',
+        exercises: [
+          {
+            id: 1,
+            orderIndex: 1,
+            exercise: {
+              id: 10,
+              name: 'Bench Press',
+              gifUrl: 'https://example.com/bench.gif',
+              isSystem: true,
+            },
+            sets: [],
+          },
+          {
+            id: 2,
+            orderIndex: 2,
+            exercise: {
+              id: 20,
+              name: 'Squat',
+              iconUrl: 'https://example.com/squat.png',
+              isSystem: true,
+            },
+            sets: [],
+          },
+        ],
+      };
+
+      component.workout.set(workoutWithImages);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const iconImgs = compiled.querySelectorAll<HTMLImageElement>('.exercise-icon-img');
+      expect(iconImgs.length).toBe(2);
+      expect(iconImgs[0].src).toBe('https://example.com/bench.gif');
+      expect(iconImgs[0].alt).toBe('Bench Press');
+      expect(iconImgs[1].src).toBe('https://example.com/squat.png');
+      expect(iconImgs[1].alt).toBe('Squat');
+    });
+
+    it('should render placeholder icon when exercise has no gifUrl or iconUrl', () => {
+      const workoutWithoutImages: Workout = {
+        id: 201,
+        title: 'Workout without Images',
+        exercises: [
+          {
+            id: 1,
+            orderIndex: 1,
+            exercise: {
+              id: 30,
+              name: 'Custom Pushup',
+              isSystem: false,
+            },
+            sets: [],
+          },
+        ],
+      };
+
+      component.workout.set(workoutWithoutImages);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.exercise-icon-img')).toBeNull();
+      const placeholder = compiled.querySelector<HTMLElement>('.exercise-icon-placeholder');
+      expect(placeholder).toBeTruthy();
+      expect(placeholder?.textContent).toContain('🏋️');
+    });
+
+    it('should link exercise icon to exercise detail page', () => {
+      const workout: Workout = {
+        id: 202,
+        title: 'Workout Link Test',
+        exercises: [
+          {
+            id: 1,
+            orderIndex: 1,
+            exercise: {
+              id: 45,
+              name: 'Deadlift',
+              gifUrl: 'https://example.com/deadlift.gif',
+              isSystem: true,
+            },
+            sets: [],
+          },
+        ],
+      };
+
+      component.workout.set(workout);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const iconLink = compiled.querySelector<HTMLAnchorElement>('.exercise-icon-link');
+      expect(iconLink).toBeTruthy();
+      expect(iconLink?.title).toContain('Deadlift');
+    });
+  });
 });
 
 

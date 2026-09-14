@@ -86,69 +86,91 @@
             @for (item of workout()!.exercises; track item.id || item.orderIndex) {
               <div class="exercise-card">
                 <div class="exercise-card-header">
-                  <div class="exercise-header-info">
-                    <h4>
-                      {{ item.orderIndex }}.
-                      <a
-                        [routerLink]="['/exercises/detail']"
-                        [queryParams]="{ exerciseId: item.exercise.id, workoutId: workout()!.id }"
-                        class="exercise-link"
-                        title="Zobacz szczegóły ćwiczenia"
-                      >
-                        {{ item.exercise.name }}
-                      </a>
-                    </h4>
-
-                    @if (isEditingNotes(item)) {
-                      <div class="exercise-notes-edit-form">
-                        <input
-                          type="text"
-                          class="exercise-notes-input"
-                          [(ngModel)]="exerciseNotesInput"
-                          (keydown.enter)="saveExerciseNotes(item)"
-                          (keydown.escape)="cancelEditNotes()"
-                          placeholder="Add notes..."
-                          autofocus
+                  <div class="exercise-header-main">
+                    <a
+                      [routerLink]="['/exercises/detail']"
+                      [queryParams]="{ exerciseId: item.exercise.id, workoutId: workout()!.id }"
+                      class="exercise-icon-link"
+                      [title]="'Zobacz szczegóły: ' + item.exercise.name"
+                    >
+                      @if (item.exercise.gifUrl || item.exercise.iconUrl) {
+                        <img
+                          [src]="item.exercise.gifUrl || item.exercise.iconUrl"
+                          [alt]="item.exercise.name"
+                          loading="lazy"
+                          class="exercise-icon-img"
                         />
-                        <button
-                          class="btn btn-save btn-sm"
-                          (click)="saveExerciseNotes(item)"
-                          [disabled]="isSavingNotes(item)"
+                      } @else {
+                        <div class="exercise-icon-placeholder">
+                          <span>🏋️</span>
+                        </div>
+                      }
+                    </a>
+
+                    <div class="exercise-header-info">
+                      <h4>
+                        {{ item.orderIndex }}.
+                        <a
+                          [routerLink]="['/exercises/detail']"
+                          [queryParams]="{ exerciseId: item.exercise.id, workoutId: workout()!.id }"
+                          class="exercise-link"
+                          title="Zobacz szczegóły ćwiczenia"
                         >
-                          {{ isSavingNotes(item) ? 'Saving...' : 'Save' }}
-                        </button>
-                        <button
-                          class="btn btn-cancel btn-sm"
-                          (click)="cancelEditNotes()"
-                          [disabled]="isSavingNotes(item)"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    } @else if (item.notes || !isReadOnly()) {
-                      <div
-                        class="exercise-notes-display"
-                        [class.readonly]="isReadOnly()"
-                        (click)="!isReadOnly() && startEditNotes(item)"
-                        [title]="isReadOnly() ? '' : 'Click to edit notes'"
-                      >
-                        @if (item.notes) {
-                          <span class="notes-text">{{ item.notes }}</span>
-                        } @else {
-                          <span class="notes-placeholder">Add notes...</span>
-                        }
-                        @if (!isReadOnly()) {
+                          {{ item.exercise.name }}
+                        </a>
+                      </h4>
+
+                      @if (isEditingNotes(item)) {
+                        <div class="exercise-notes-edit-form">
+                          <input
+                            type="text"
+                            class="exercise-notes-input"
+                            [(ngModel)]="exerciseNotesInput"
+                            (keydown.enter)="saveExerciseNotes(item)"
+                            (keydown.escape)="cancelEditNotes()"
+                            placeholder="Add notes..."
+                            autofocus
+                          />
                           <button
-                            type="button"
-                            class="btn-edit-notes"
-                            (click)="startEditNotes(item); $event.stopPropagation()"
-                            title="Edit notes"
+                            class="btn btn-save btn-sm"
+                            (click)="saveExerciseNotes(item)"
+                            [disabled]="isSavingNotes(item)"
                           >
-                            ✏️
+                            {{ isSavingNotes(item) ? 'Saving...' : 'Save' }}
                           </button>
-                        }
-                      </div>
-                    }
+                          <button
+                            class="btn btn-cancel btn-sm"
+                            (click)="cancelEditNotes()"
+                            [disabled]="isSavingNotes(item)"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      } @else if (item.notes || !isReadOnly()) {
+                        <div
+                          class="exercise-notes-display"
+                          [class.readonly]="isReadOnly()"
+                          (click)="!isReadOnly() && startEditNotes(item)"
+                          [title]="isReadOnly() ? '' : 'Click to edit notes'"
+                        >
+                          @if (item.notes) {
+                            <span class="notes-text">{{ item.notes }}</span>
+                          } @else {
+                            <span class="notes-placeholder">Add notes...</span>
+                          }
+                          @if (!isReadOnly()) {
+                            <button
+                              type="button"
+                              class="btn-edit-notes"
+                              (click)="startEditNotes(item); $event.stopPropagation()"
+                              title="Edit notes"
+                            >
+                              ✏️
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
                   </div>
                   @if (item.restTimerSeconds) {
                     <span class="rest-timer">Rest: {{ item.restTimerSeconds }}s</span>
