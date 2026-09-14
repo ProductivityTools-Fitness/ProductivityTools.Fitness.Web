@@ -183,7 +183,9 @@
                       <thead>
                         <tr>
                           <th>Set</th>
-                          <th>Previous</th>
+                          @if (!isReadOnly()) {
+                            <th>Previous</th>
+                          }
                           <th class="col-weight">Weight (kg)</th>
                           <th class="col-reps">Reps</th>
                           <th class="col-complete" title="Complete"></th>
@@ -196,9 +198,11 @@
                         @for (set of item.sets; track set.id || set.setNumber) {
                           <tr [class.completed]="set.isCompleted">
                             <td class="col-set-num">{{ set.setNumber }}</td>
-                            <td class="col-previous">
-                              <span class="prev-val">{{ formatPrevious(set) }}</span>
-                            </td>
+                            @if (!isReadOnly()) {
+                              <td class="col-previous">
+                                <span class="prev-val">{{ formatPrevious(set) }}</span>
+                              </td>
+                            }
                             <td class="col-weight" [class.col-editable]="!isReadOnly()" (click)="!isReadOnly() && startEdit(set, 'weight')">
                               @if (!isReadOnly() && isEditing(set.id, 'weight')) {
                                 <input

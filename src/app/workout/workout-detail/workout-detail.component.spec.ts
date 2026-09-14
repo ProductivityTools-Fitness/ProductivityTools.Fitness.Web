@@ -429,6 +429,38 @@ describe('WorkoutDetailComponent', () => {
     expect(prevElements[1].textContent?.trim()).toBe('—');
   });
 
+  it('should not render Previous column when in readonly mode', () => {
+    const set1 = {
+      id: 101,
+      setNumber: 1,
+      weightKg: 80,
+      reps: 10,
+      prevWeightKg: 50,
+      prevReps: 10,
+      isCompleted: true,
+    };
+    const completedWorkout: Workout = {
+      id: 1,
+      title: 'Trening #1',
+      status: 'COMPLETED',
+      exercises: [
+        {
+          orderIndex: 1,
+          exercise: { id: 42, name: 'Squat', isSystem: true },
+          sets: [set1],
+        },
+      ],
+    };
+    component.workout.set(completedWorkout);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const prevHeaders = Array.from(compiled.querySelectorAll('th')).filter(th => th.textContent?.trim() === 'Previous');
+    const prevCells = compiled.querySelectorAll<HTMLElement>('.col-previous');
+    expect(prevHeaders.length).toBe(0);
+    expect(prevCells.length).toBe(0);
+  });
+
   it('should correctly format previous set in formatPrevious', () => {
     expect(
       component.formatPrevious({
